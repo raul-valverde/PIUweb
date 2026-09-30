@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CaribeTech - Menú Interactivo 3D | UAM</title>
+  <!-- Tailwind CSS via CDN para diseño moderno y responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    /* Simulación de Contenedor 3D */
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .card-3d-model {
+      transition: transform 0.1s ease-out;
+      cursor: grab;
+    }
+    .card-3d-model:active { cursor: grabbing; }
+
+    /* Animación de pulso para botón AR */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9); }
+    }
+    .ar-btn-glow { animation: pulse-glow 2s infinite; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-amber-500 to-teal-400 p-2.5 rounded-xl shadow-lg">
+          <i class="fa-solid font-bold fa-cube text-slate-950 text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-none text-amber-400">CaribeTech <span class="text-teal-400">AR</span></h1>
+          <p class="text-xs text-slate-400">Gastronomía Caribeña • Cafetín UAM</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs text-slate-300">
+        <i class="fa-solid fa-location-dot text-amber-400"></i>
+        <span>Plaza Central UAM</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER PRINCIPAL / HERO -->
+  <section class="relative bg-gradient-to-r from-teal-950 via-slate-900 to-amber-950 border-b border-slate-800 py-10 px-4">
+    <div class="max-w-6xl mx-auto text-center space-y-4">
+      <span class="inline-flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-semibold">
+        <i class="fa-solid fa-qrcode"></i> Escanea • Mira en 3D • Prueba
+      </span>
+      <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+        El Sabor del Caribe en <span class="bg-gradient-to-r from-amber-400 to-teal-300 bg-clip-text text-transparent">3D & Realidad Aumentada</span>
+      </h2>
+      <p class="text-slate-300 text-sm md:text-base max-w-2xl mx-auto">
+        Explora los ingredientes, historias y modelos tridimensionales de la gastronomía afrodescendiente de Nicaragua antes de pedir en la cafetería.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE CATEGORÍAS -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <h3 class="text-xl font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-utensils text-amber-400"></i> Platillos Tradicionales
+      </h3>
+      
+      <!-- Filtros -->
+      <div class="flex gap-2 overflow-x-auto pb-2 text-xs md:text-sm">
+        <button onclick="filterDishes('all')" class="filter-btn bg-amber-500 text-slate-950 px-4 py-1.5 rounded-full font-semibold transition">Todos</button>
+        <button onclick="filterDishes('fuertes')" class="filter-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-full font-medium transition">Platos Fuertes</button>
+        <button onclick="filterDishes('reposteria')" class="filter-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-full font-medium transition">Repostería & Antojitos</button>
+      </div>
+    </div>
+
+    <!-- GRID DE PLATILLOS -->
+    <div id="dishes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Generado dinámicamente por JavaScript -->
+    </div>
+  </main>
+
+  <!-- MODAL / VISOR 3D INTERACTIVO -->
+  <div id="modal-3d" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+      
+      <!-- Botón Cerrar -->
+      <button onclick="closeModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center z-10 border border-slate-600">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- VISOR 3D (Área Interactiva) -->
+      <div class="bg-gradient-to-b from-slate-950 to-slate-900 p-6 flex flex-col items-center justify-center relative border-b border-slate-800 perspective-1000 min-h-[260px] select-none">
+        
+        <span class="absolute top-4 left-4 bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1.5 font-bold">
+          <i class="fa-solid fa-cube animate-spin"></i> MODELO 3D INTERACTIVO
+        </span>
+
+        <!-- Plato en 3D Simulado -->
+        <div id="3d-container" class="transform-style-3d my-4">
+          <div id="3d-card" class="card-3d-model w-48 h-48 md:w-56 md:h-56 rounded-full bg-slate-800/80 border-4 border-amber-500/40 p-4 shadow-2xl flex flex-col items-center justify-center relative">
+            <img id="modal-img" src="" alt="3D Model" class="w-36 h-36 md:w-44 md:h-44 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] pointer-events-none">
+            <div class="absolute -bottom-3 bg-slate-950 border border-amber-400 text-amber-400 text-[10px] px-3 py-0.5 rounded-full font-bold uppercase tracking-wider">
+              Arrastra para rotar 360°
+            </div>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
+          <i class="fa-solid fa-hand-pointer text-amber-400"></i> Haz clic y mueve el cursor sobre el plato para inspeccionarlo
+        </p>
+      </div>
+
+      <!-- DETALLES E INFORMACIÓN CULTURAL -->
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <h3 id="modal-title" class="text-2xl font-extrabold text-white"></h3>
+            <span id="modal-price" class="text-lg font-bold text-teal-400 bg-teal-500/10 px-3 py-1 rounded-lg border border-teal-500/30"></span>
+          </div>
+          <p id="modal-desc" class="text-slate-300 text-sm leading-relaxed"></p>
+        </div>
+
+        <!-- Pestañas de Info -->
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
+          
+          <!-- Ingredientes & Alérgenos -->
+          <div>
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-leaf"></i> Ingredientes Base & Alérgenos
+            </h4>
+            <p id="modal-ingredients" class="text-xs text-slate-300"></p>
+          </div>
+
+          <!-- Historia Cultural -->
+          <div class="border-t border-slate-800 pt-2.5">
+            <h4 class="text-xs font-bold text-teal-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-book-open"></i> Raíces del Caribe (Creole Culture)
+            </h4>
+            <p id="modal-culture" class="text-xs text-slate-300 italic"></p>
+          </div>
+
+          <!-- Maridaje -->
+          <div class="border-t border-slate-800 pt-2.5 flex items-center justify-between">
+            <span class="text-xs text-slate-400"><i class="fa-solid fa-glass-water text-amber-400"></i> Maridaje Sugerido:</span>
+            <span id="modal-drink" class="text-xs font-semibold text-amber-300"></span>
+          </div>
+        </div>
+
+        <!-- Botón de Acción / Pre-orden -->
+        <div class="pt-2 flex gap-3">
+          <button onclick="preOrderDish()" class="ar-btn-glow flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-bolt"></i> Pre-ordenar Express (Listo en 3 min)
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIÓN -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-teal-500 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-2xl border border-teal-300 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50">
+    <i class="fa-solid fa-circle-check text-xl"></i>
+    <span id="toast-msg">¡Pedido enviado a la caja rápida del cafetín!</span>
+  </div>
+
+  <!-- FOOTER Y CRÉDITOS -->
+  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    <p class="font-medium text-slate-400">Proyecto Design Thinking • Universidad Americana (UAM)</p>
+    <p class="mt-1">Desarrollado por la Agencia <span class="text-amber-400 font-semibold">CaribeTech Solutions</span> (Raúl Valverde & Kellys Bellanger)</p>
+    <p class="mt-0.5 text-slate-600">Ingeniería de Sistemas • Septiembre 2026</p>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Base de Datos de Platillos Caribeños
+    const dishes = [
+      {
+        id: 'rondon',
+        name: 'Rondón Caribeño Express',
+        category: 'fuertes',
+        price: 'C$ 180',
+        image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80',
+        shortDesc: 'Sopa de pescado frito y mariscos cocida en leche de coco con bastimentos tradicionales (yuca, plátano, malanga).',
+        ingredients: 'Pescado fresco, leche de coco natural, yuca, plátano verde, fruta de pan, chile cabro, pimienta dulce.',
+        culture: 'El término deriva de "Run down" (buscar lo que hay). Tradicionalmente los pescadores agregaban los ingredientes recolectados durante la jornada.',
+        drink: 'Chicha de Grama Helada / Pinolillo con Jengibre'
+      },
+      {
+        id: 'pati',
+        name: 'Pati Tradicional',
+        category: 'reposteria',
+        price: 'C$ 45',
+        image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
+        shortDesc: 'Empanada de masa horneada crujiente teñida con achiote, rellena de carne molida sazonada con chile cabro.',
+        ingredients: 'Harina de trigo, achiote, carne molida de res, cebolla, chile cabro picante, especias caribeñas.',
+        culture: 'Un clásico "snack" traído por los migrantes afro-caribeños de Jamaica a Bluefields y Puerto Cabezas.',
+        drink: 'Fresco de Jengibre Natural'
+      },
+      {
+        id: 'panbon',
+        name: 'Pan Bon (Bun)',
+        category: 'reposteria',
+        price: 'C$ 40',
+        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80',
+        shortDesc: 'Pan oscuro esponjoso especiado con frutas confitadas, pasas, vainilla y un toque de queso o mantequilla.',
+        ingredients: 'Harina, miel de caña / melaza, fruta confitada, pasas, canela, clavo de olor, mantequilla.',
+        culture: 'Representa la herencia británica en la Costa Caribe. Típicamente preparado durante la Semana Santa y festividades comunitarias.',
+        drink: 'Café de Matagalpa o Té de Limón'
+      },
+      {
+        id: 'ricebeans',
+        name: 'Rice & Beans con Pollo al Coco',
+        category: 'fuertes',
+        price: 'C$ 150',
+        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=400&q=80',
+        shortDesc: 'Arroz y frijoles rojos cocinados con leche de coco y aceite de coco, acompañado de pollo guisado y tajadas.',
+        ingredients: 'Arroz, frijoles rojos, leche de coco pura, chile cabro entero, tomillo, pollo en salsa de coco.',
+        culture: 'Es el platillo insigne del domingo en los hogares del Caribe nicaragüense, conocido por su aroma inconfundible a coco.',
+        drink: 'Agua de Coco Fresca'
+      },
+      {
+        id: 'plantain',
+        name: 'Plantain Tart (Tartaleta)',
+        category: 'reposteria',
+        price: 'C$ 35',
+        image: 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=400&q=80',
+        shortDesc: 'Empanadita dulce horneada con relleno suave de plátano maduro aromatizado con canela y colorante vegetal purpúreo.',
+        ingredients: 'Masa hojaldrada, plátano maduro majado, azúcar, canela, esencia de vainilla.',
+        culture: 'El postre favorito para acompañar el receso escolar y universitario en la Región Autónoma de la Costa Caribe.',
+        drink: 'Leche de Coco Helada'
+      }
+    ];
+
+    let activeDish = null;
+
+    // Cargar Catálogo
+    function renderDishes(items) {
+      const grid = document.getElementById('dishes-grid');
+      grid.innerHTML = '';
+
+      items.forEach(dish => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-500/50 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between group shadow-lg';
+        card.innerHTML = `
+          <div>
+            <div class="relative h-48 overflow-hidden bg-slate-900">
+              <img src="${dish.image}" alt="${dish.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+              <span class="absolute top-3 right-3 bg-slate-950/80 text-amber-400 border border-amber-500/30 font-bold text-xs px-2.5 py-1 rounded-lg">
+                ${dish.price}
+              </span>
+            </div>
+            <div class="p-5">
+              <h4 class="font-bold text-lg text-white group-hover:text-amber-400 transition mb-1">${dish.name}</h4>
+              <p class="text-slate-300 text-xs line-clamp-2 leading-relaxed mb-4">${dish.shortDesc}</p>
+            </div>
+          </div>
+          <div class="px-5 pb-5 pt-0">
+            <button onclick="open3DModal('${dish.id}')" class="w-full bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-cube text-amber-400 group-hover:text-slate-950"></i> Ver Modelo 3D & Detalles
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Filtros de Categoría
+    function filterDishes(category) {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-amber-500', 'text-slate-950');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      event.target.classList.remove('bg-slate-800', 'text-slate-300');
+      event.target.classList.add('bg-amber-500', 'text-slate-950');
+
+      if (category === 'all') {
+        renderDishes(dishes);
+      } else {
+        const filtered = dishes.filter(d => d.category === category);
+        renderDishes(filtered);
+      }
+    }
+
+    // Modal & Visor 3D Interactivo
+    function open3DModal(id) {
+      activeDish = dishes.find(d => d.id === id);
+      if (!activeDish) return;
+
+      document.getElementById('modal-img').src = activeDish.image;
+      document.getElementById('modal-title').innerText = activeDish.name;
+      document.getElementById('modal-price').innerText = activeDish.price;
+      document.getElementById('modal-desc').innerText = activeDish.shortDesc;
+      document.getElementById('modal-ingredients').innerText = activeDish.ingredients;
+      document.getElementById('modal-culture').innerText = `"${activeDish.culture}"`;
+      document.getElementById('modal-drink').innerText = activeDish.drink;
+
+      document.getElementById('modal-3d').classList.remove('hidden');
+      reset3DRotation();
+    }
+
+    function closeModal() {
+      document.getElementById('modal-3d').classList.add('hidden');
+    }
+
+    // Lógica para Rotar la Tarjeta 3D con Mouse/Touch
+    const card3D = document.getElementById('3d-card');
+    let isDragging = false;
+    let startX, startY;
+    let rotX = 0, rotY = 0;
+
+    const container3D = document.getElementById('3d-container');
+
+    container3D.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      rotY += deltaX * 0.5;
+      rotX -= deltaY * 0.5;
+
+      card3D.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    function reset3DRotation() {
+      rotX = 10;
+      rotY = 15;
+      card3D.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    // Simulación de Pre-orden Express
+    function preOrderDish() {
+      closeModal();
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = `¡Pre-orden de ${activeDish.name} enviada! Pasa retirando a la caja express.`;
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 4000);
+    }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDishes(dishes);
+    });
+  </script>
+</body>
+</html>
