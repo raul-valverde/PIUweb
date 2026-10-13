@@ -1,371 +1,1214 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CaribeTech - Menú Interactivo 3D | UAM</title>
-  <!-- Tailwind CSS via CDN para diseño moderno y responsive -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabores de Nuestra Tierra: Gastronomía del Norte y Centro de Nicaragua</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    /* Simulación de Contenedor 3D */
-    .perspective-1000 { perspective: 1000px; }
-    .transform-style-3d { transform-style: preserve-3d; }
-    .card-3d-model {
-      transition: transform 0.1s ease-out;
-      cursor: grab;
-    }
-    .card-3d-model:active { cursor: grabbing; }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600;1,800&display=swap" rel="stylesheet">
 
-    /* Animación de pulso para botón AR */
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
-      50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9); }
-    }
-    .ar-btn-glow { animation: pulse-glow 2s infinite; }
-  </style>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nicaser: {
+                            terracota: '#C85A32',
+                            barro: '#8C3818',
+                            barroDark: '#50200D',
+                            maiz: '#E6A13B',
+                            maizLight: '#F3C168',
+                            maizSuave: '#FDF8EE',
+                            platano: '#2D5A27',
+                            platanoLight: '#4B8843',
+                            cafe: '#2C1D11',
+                            cafeLight: '#4A3525',
+                            crema: '#FAF5EA',
+                            gold: '#D4AF37'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #1A1009;
+            color: #FDF8EE;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism styling */
+        .glass-card {
+            background: rgba(38, 24, 15, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(230, 161, 59, 0.25);
+            box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .glass-card-accent {
+            background: rgba(200, 90, 50, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(230, 161, 59, 0.4);
+        }
+
+        .glass-modal {
+            background: rgba(26, 16, 9, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(230, 161, 59, 0.35);
+        }
+
+        /* Slide Engine */
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95) translateY(24px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5rem 1.5rem 6rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Gradient background with organic blobs */
+        .bg-nicaragua-pattern {
+            background-color: #1A1009;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(200, 90, 50, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(45, 90, 39, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(230, 161, 59, 0.12) 0%, transparent 60%);
+        }
+
+        /* Interactive card transitions */
+        .interactive-card {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .interactive-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 16px 30px -5px rgba(230, 161, 59, 0.3);
+            border-color: rgba(230, 161, 59, 0.6);
+        }
+
+        /* Pulse glow animation */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .pulse-subtle {
+            animation: subtlePulse 4s infinite ease-in-out;
+        }
+
+        /* Steam animation for hot dishes/coffee */
+        @keyframes steamRise {
+            0% { transform: translateY(0) scaleX(1); opacity: 0; }
+            50% { opacity: 0.6; }
+            100% { transform: translateY(-18px) scaleX(1.3); opacity: 0; }
+        }
+        .steam-line {
+            animation: steamRise 2.5s infinite ease-out;
+        }
+        .steam-delay-1 { animation-delay: 0.4s; }
+        .steam-delay-2 { animation-delay: 0.8s; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 16, 9, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C85A32;
+            border-radius: 4px;
+        }
+
+        /* Speaker Badge Gradient */
+        .badge-speaker-1 {
+            background: linear-gradient(135deg, #C85A32, #8C3818);
+        }
+        .badge-speaker-2 {
+            background: linear-gradient(135deg, #2D5A27, #1E3D1A);
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+<body class="bg-nicaragua-pattern text-nicaser-maizSuave h-full w-full select-none overflow-hidden">
 
-  <!-- NAVBAR -->
-  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="bg-gradient-to-tr from-amber-500 to-teal-400 p-2.5 rounded-xl shadow-lg">
-          <i class="fa-solid font-bold fa-cube text-slate-950 text-xl"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg leading-none text-amber-400">CaribeTech <span class="text-teal-400">AR</span></h1>
-          <p class="text-xs text-slate-400">Gastronomía Caribeña • Cafetín UAM</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs text-slate-300">
-        <i class="fa-solid fa-location-dot text-amber-400"></i>
-        <span>Plaza Central UAM</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- BANNER PRINCIPAL / HERO -->
-  <section class="relative bg-gradient-to-r from-teal-950 via-slate-900 to-amber-950 border-b border-slate-800 py-10 px-4">
-    <div class="max-w-6xl mx-auto text-center space-y-4">
-      <span class="inline-flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-semibold">
-        <i class="fa-solid fa-qrcode"></i> Escanea • Mira en 3D • Prueba
-      </span>
-      <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
-        El Sabor del Caribe en <span class="bg-gradient-to-r from-amber-400 to-teal-300 bg-clip-text text-transparent">3D & Realidad Aumentada</span>
-      </h2>
-      <p class="text-slate-300 text-sm md:text-base max-w-2xl mx-auto">
-        Explora los ingredientes, historias y modelos tridimensionales de la gastronomía afrodescendiente de Nicaragua antes de pedir en la cafetería.
-      </p>
-    </div>
-  </section>
-
-  <!-- SECCIÓN DE CATEGORÍAS -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
-    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
-      <h3 class="text-xl font-bold text-white flex items-center gap-2">
-        <i class="fa-solid fa-utensils text-amber-400"></i> Platillos Tradicionales
-      </h3>
-      
-      <!-- Filtros -->
-      <div class="flex gap-2 overflow-x-auto pb-2 text-xs md:text-sm">
-        <button onclick="filterDishes('all')" class="filter-btn bg-amber-500 text-slate-950 px-4 py-1.5 rounded-full font-semibold transition">Todos</button>
-        <button onclick="filterDishes('fuertes')" class="filter-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-full font-medium transition">Platos Fuertes</button>
-        <button onclick="filterDishes('reposteria')" class="filter-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-full font-medium transition">Repostería & Antojitos</button>
-      </div>
-    </div>
-
-    <!-- GRID DE PLATILLOS -->
-    <div id="dishes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Generado dinámicamente por JavaScript -->
-    </div>
-  </main>
-
-  <!-- MODAL / VISOR 3D INTERACTIVO -->
-  <div id="modal-3d" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
-      
-      <!-- Botón Cerrar -->
-      <button onclick="closeModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center z-10 border border-slate-600">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
-
-      <!-- VISOR 3D (Área Interactiva) -->
-      <div class="bg-gradient-to-b from-slate-950 to-slate-900 p-6 flex flex-col items-center justify-center relative border-b border-slate-800 perspective-1000 min-h-[260px] select-none">
-        
-        <span class="absolute top-4 left-4 bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1.5 font-bold">
-          <i class="fa-solid fa-cube animate-spin"></i> MODELO 3D INTERACTIVO
-        </span>
-
-        <!-- Plato en 3D Simulado -->
-        <div id="3d-container" class="transform-style-3d my-4">
-          <div id="3d-card" class="card-3d-model w-48 h-48 md:w-56 md:h-56 rounded-full bg-slate-800/80 border-4 border-amber-500/40 p-4 shadow-2xl flex flex-col items-center justify-center relative">
-            <img id="modal-img" src="" alt="3D Model" class="w-36 h-36 md:w-44 md:h-44 object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] pointer-events-none">
-            <div class="absolute -bottom-3 bg-slate-950 border border-amber-400 text-amber-400 text-[10px] px-3 py-0.5 rounded-full font-bold uppercase tracking-wider">
-              Arrastra para rotar 360°
+    <!-- Top Header Bar -->
+    <header class="fixed top-0 left-0 w-full z-40 px-4 md:px-8 py-3 flex justify-between items-center bg-nicaser-cafe/85 backdrop-blur-md border-b border-nicaser-maiz/20">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="goToSlide(1)">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-nicaser-terracota to-nicaser-maiz flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                <i class="fa-solid fa-utensils"></i>
             </div>
-          </div>
-        </div>
-
-        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-          <i class="fa-solid fa-hand-pointer text-amber-400"></i> Haz clic y mueve el cursor sobre el plato para inspeccionarlo
-        </p>
-      </div>
-
-      <!-- DETALLES E INFORMACIÓN CULTURAL -->
-      <div class="p-6 overflow-y-auto space-y-4">
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <h3 id="modal-title" class="text-2xl font-extrabold text-white"></h3>
-            <span id="modal-price" class="text-lg font-bold text-teal-400 bg-teal-500/10 px-3 py-1 rounded-lg border border-teal-500/30"></span>
-          </div>
-          <p id="modal-desc" class="text-slate-300 text-sm leading-relaxed"></p>
-        </div>
-
-        <!-- Pestañas de Info -->
-        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
-          
-          <!-- Ingredientes & Alérgenos -->
-          <div>
-            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <i class="fa-solid fa-leaf"></i> Ingredientes Base & Alérgenos
-            </h4>
-            <p id="modal-ingredients" class="text-xs text-slate-300"></p>
-          </div>
-
-          <!-- Historia Cultural -->
-          <div class="border-t border-slate-800 pt-2.5">
-            <h4 class="text-xs font-bold text-teal-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <i class="fa-solid fa-book-open"></i> Raíces del Caribe (Creole Culture)
-            </h4>
-            <p id="modal-culture" class="text-xs text-slate-300 italic"></p>
-          </div>
-
-          <!-- Maridaje -->
-          <div class="border-t border-slate-800 pt-2.5 flex items-center justify-between">
-            <span class="text-xs text-slate-400"><i class="fa-solid fa-glass-water text-amber-400"></i> Maridaje Sugerido:</span>
-            <span id="modal-drink" class="text-xs font-semibold text-amber-300"></span>
-          </div>
-        </div>
-
-        <!-- Botón de Acción / Pre-orden -->
-        <div class="pt-2 flex gap-3">
-          <button onclick="preOrderDish()" class="ar-btn-glow flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 transition">
-            <i class="fa-solid fa-bolt"></i> Pre-ordenar Express (Listo en 3 min)
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- TOAST NOTIFICACIÓN -->
-  <div id="toast" class="fixed bottom-6 right-6 bg-teal-500 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-2xl border border-teal-300 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50">
-    <i class="fa-solid fa-circle-check text-xl"></i>
-    <span id="toast-msg">¡Pedido enviado a la caja rápida del cafetín!</span>
-  </div>
-
-  <!-- FOOTER Y CRÉDITOS -->
-  <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-    <p class="font-medium text-slate-400">Proyecto Design Thinking • Universidad Americana (UAM)</p>
-    <p class="mt-1">Desarrollado por la Agencia <span class="text-amber-400 font-semibold">CaribeTech Solutions</span> (Raúl Valverde & Kellys Bellanger)</p>
-    <p class="mt-0.5 text-slate-600">Ingeniería de Sistemas • Septiembre 2026</p>
-  </footer>
-
-  <!-- JAVASCRIPT LOGIC -->
-  <script>
-    // Base de Datos de Platillos Caribeños
-    const dishes = [
-      {
-        id: 'rondon',
-        name: 'Rondón Caribeño Express',
-        category: 'fuertes',
-        price: 'C$ 180',
-        image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=400&q=80',
-        shortDesc: 'Sopa de pescado frito y mariscos cocida en leche de coco con bastimentos tradicionales (yuca, plátano, malanga).',
-        ingredients: 'Pescado fresco, leche de coco natural, yuca, plátano verde, fruta de pan, chile cabro, pimienta dulce.',
-        culture: 'El término deriva de "Run down" (buscar lo que hay). Tradicionalmente los pescadores agregaban los ingredientes recolectados durante la jornada.',
-        drink: 'Chicha de Grama Helada / Pinolillo con Jengibre'
-      },
-      {
-        id: 'pati',
-        name: 'Pati Tradicional',
-        category: 'reposteria',
-        price: 'C$ 45',
-        image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=400&q=80',
-        shortDesc: 'Empanada de masa horneada crujiente teñida con achiote, rellena de carne molida sazonada con chile cabro.',
-        ingredients: 'Harina de trigo, achiote, carne molida de res, cebolla, chile cabro picante, especias caribeñas.',
-        culture: 'Un clásico "snack" traído por los migrantes afro-caribeños de Jamaica a Bluefields y Puerto Cabezas.',
-        drink: 'Fresco de Jengibre Natural'
-      },
-      {
-        id: 'panbon',
-        name: 'Pan Bon (Bun)',
-        category: 'reposteria',
-        price: 'C$ 40',
-        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80',
-        shortDesc: 'Pan oscuro esponjoso especiado con frutas confitadas, pasas, vainilla y un toque de queso o mantequilla.',
-        ingredients: 'Harina, miel de caña / melaza, fruta confitada, pasas, canela, clavo de olor, mantequilla.',
-        culture: 'Representa la herencia británica en la Costa Caribe. Típicamente preparado durante la Semana Santa y festividades comunitarias.',
-        drink: 'Café de Matagalpa o Té de Limón'
-      },
-      {
-        id: 'ricebeans',
-        name: 'Rice & Beans con Pollo al Coco',
-        category: 'fuertes',
-        price: 'C$ 150',
-        image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=400&q=80',
-        shortDesc: 'Arroz y frijoles rojos cocinados con leche de coco y aceite de coco, acompañado de pollo guisado y tajadas.',
-        ingredients: 'Arroz, frijoles rojos, leche de coco pura, chile cabro entero, tomillo, pollo en salsa de coco.',
-        culture: 'Es el platillo insigne del domingo en los hogares del Caribe nicaragüense, conocido por su aroma inconfundible a coco.',
-        drink: 'Agua de Coco Fresca'
-      },
-      {
-        id: 'plantain',
-        name: 'Plantain Tart (Tartaleta)',
-        category: 'reposteria',
-        price: 'C$ 35',
-        image: 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=400&q=80',
-        shortDesc: 'Empanadita dulce horneada con relleno suave de plátano maduro aromatizado con canela y colorante vegetal purpúreo.',
-        ingredients: 'Masa hojaldrada, plátano maduro majado, azúcar, canela, esencia de vainilla.',
-        culture: 'El postre favorito para acompañar el receso escolar y universitario en la Región Autónoma de la Costa Caribe.',
-        drink: 'Leche de Coco Helada'
-      }
-    ];
-
-    let activeDish = null;
-
-    // Cargar Catálogo
-    function renderDishes(items) {
-      const grid = document.getElementById('dishes-grid');
-      grid.innerHTML = '';
-
-      items.forEach(dish => {
-        const card = document.createElement('div');
-        card.className = 'bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-500/50 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between group shadow-lg';
-        card.innerHTML = `
-          <div>
-            <div class="relative h-48 overflow-hidden bg-slate-900">
-              <img src="${dish.image}" alt="${dish.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-              <span class="absolute top-3 right-3 bg-slate-950/80 text-amber-400 border border-amber-500/30 font-bold text-xs px-2.5 py-1 rounded-lg">
-                ${dish.price}
-              </span>
+            <div>
+                <h1 class="font-serif font-bold text-base md:text-lg leading-tight text-nicaser-maiz">Sabor de Nicaragua</h1>
+                <span class="text-[10px] md:text-xs text-nicaser-maizSuave/70 tracking-widest uppercase block">Norte & Centro</span>
             </div>
-            <div class="p-5">
-              <h4 class="font-bold text-lg text-white group-hover:text-amber-400 transition mb-1">${dish.name}</h4>
-              <p class="text-slate-300 text-xs line-clamp-2 leading-relaxed mb-4">${dish.shortDesc}</p>
-            </div>
-          </div>
-          <div class="px-5 pb-5 pt-0">
-            <button onclick="open3DModal('${dish.id}')" class="w-full bg-slate-700 hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
-              <i class="fa-solid fa-cube text-amber-400 group-hover:text-slate-950"></i> Ver Modelo 3D & Detalles
+        </div>
+
+        <!-- Speaker Notes Toggle & Progress Counter -->
+        <div class="flex items-center gap-3">
+            <button id="toggleSpeakerBtn" onclick="toggleSpeakerPanel()" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-nicaser-terracota/30 border border-nicaser-terracota/60 hover:bg-nicaser-terracota hover:text-white transition flex items-center gap-2 text-nicaser-maizLight shadow-md">
+                <i class="fa-solid fa-clipboard-user text-nicaser-maiz"></i>
+                <span id="speakerBtnText" class="hidden sm:inline">Guion Expositores</span>
             </button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
 
-    // Filtros de Categoría
-    function filterDishes(category) {
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('bg-amber-500', 'text-slate-950');
-        btn.classList.add('bg-slate-800', 'text-slate-300');
-      });
-      event.target.classList.remove('bg-slate-800', 'text-slate-300');
-      event.target.classList.add('bg-amber-500', 'text-slate-950');
+            <div class="bg-nicaser-cafeLight/80 px-3.5 py-1.5 rounded-full text-xs font-bold border border-nicaser-maiz/30 flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-nicaser-maiz"></i>
+                <span id="currentSlideNum" class="text-nicaser-maiz text-sm">1</span>
+                <span class="text-nicaser-maizSuave/40">/</span>
+                <span class="text-nicaser-maizSuave/70">8</span>
+            </div>
+        </div>
+    </header>
 
-      if (category === 'all') {
-        renderDishes(dishes);
-      } else {
-        const filtered = dishes.filter(d => d.category === category);
-        renderDishes(filtered);
-      }
-    }
+    <main class="relative w-full h-full">
 
-    // Modal & Visor 3D Interactivo
-    function open3DModal(id) {
-      activeDish = dishes.find(d => d.id === id);
-      if (!activeDish) return;
+        <!-- ================= SLIDE 1: PORTADA ================= -->
+        <section class="slide active" id="slide-1">
+            <div class="max-w-4xl text-center flex flex-col items-center my-auto">
+                
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-nicaser-platano/30 border border-nicaser-platanoLight text-nicaser-maizLight mb-6 text-xs font-semibold tracking-wide pulse-subtle">
+                    <i class="fa-solid fa-pepper-hot"></i> Presentación Gastronómica Interactiva
+                </div>
 
-      document.getElementById('modal-img').src = activeDish.image;
-      document.getElementById('modal-title').innerText = activeDish.name;
-      document.getElementById('modal-price').innerText = activeDish.price;
-      document.getElementById('modal-desc').innerText = activeDish.shortDesc;
-      document.getElementById('modal-ingredients').innerText = activeDish.ingredients;
-      document.getElementById('modal-culture').innerText = `"${activeDish.culture}"`;
-      document.getElementById('modal-drink').innerText = activeDish.drink;
+                <!-- Main SVG Hero Graphic -->
+                <div class="w-48 h-48 md:w-56 md:h-56 mb-4 relative flex items-center justify-center">
+                    <!-- Custom SVG Pottery & Corn Graphic -->
+                    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-[0_10px_20px_rgba(230,161,59,0.3)]">
+                        <!-- Steam lines -->
+                        <path d="M85 45 Q90 35 85 25" stroke="#E6A13B" stroke-width="3" fill="none" stroke-linecap="round" class="steam-line" />
+                        <path d="M100 40 Q105 30 100 20" stroke="#F3C168" stroke-width="3" fill="none" stroke-linecap="round" class="steam-line steam-delay-1" />
+                        <path d="M115 45 Q120 35 115 25" stroke="#E6A13B" stroke-width="3" fill="none" stroke-linecap="round" class="steam-line steam-delay-2" />
+                        
+                        <!-- Clay Pot Base -->
+                        <ellipse cx="100" cy="155" rx="65" ry="18" fill="#50200D" />
+                        <path d="M40 110 Q35 150 100 155 Q165 150 160 110 Q150 90 100 90 Q50 90 40 110 Z" fill="#8C3818" stroke="#C85A32" stroke-width="3" />
+                        <!-- Pot Rim & Ornamentation -->
+                        <ellipse cx="100" cy="90" rx="52" ry="12" fill="#A0401D" stroke="#E6A13B" stroke-width="2" />
+                        <path d="M50 115 Q100 125 150 115" stroke="#E6A13B" stroke-width="2" fill="none" stroke-dasharray="4,4" />
 
-      document.getElementById('modal-3d').classList.remove('hidden');
-      reset3DRotation();
-    }
+                        <!-- Golden Corn Ear sticking out -->
+                        <g transform="translate(70,45) rotate(-20)">
+                            <path d="M25 10 C35 10 40 50 25 70 C10 50 15 10 25 10 Z" fill="#E6A13B" stroke="#F3C168" stroke-width="2" />
+                            <!-- Grains -->
+                            <circle cx="21" cy="25" r="2.5" fill="#FAF5EA" />
+                            <circle cx="29" cy="25" r="2.5" fill="#FAF5EA" />
+                            <circle cx="20" cy="35" r="2.5" fill="#FAF5EA" />
+                            <circle cx="30" cy="35" r="2.5" fill="#FAF5EA" />
+                            <circle cx="25" cy="45" r="2.5" fill="#FAF5EA" />
+                            <!-- Green Husk -->
+                            <path d="M10 55 Q20 75 25 75 Q30 75 40 55 C30 65 20 65 10 55 Z" fill="#2D5A27" />
+                        </g>
 
-    function closeModal() {
-      document.getElementById('modal-3d').classList.add('hidden');
-    }
+                        <!-- Coffee Beans on side -->
+                        <ellipse cx="150" cy="155" rx="8" ry="5" fill="#2C1D11" transform="rotate(-15 150 155)" />
+                        <path d="M144 155 Q150 157 156 155" stroke="#8C3818" stroke-width="1.5" fill="none" />
+                        
+                        <ellipse cx="162" cy="162" rx="7" ry="4.5" fill="#4A3525" transform="rotate(30 162 162)" />
+                        <path d="M157 162 Q162 164 167 162" stroke="#8C3818" stroke-width="1.5" fill="none" />
+                    </svg>
+                </div>
 
-    // Lógica para Rotar la Tarjeta 3D con Mouse/Touch
-    const card3D = document.getElementById('3d-card');
-    let isDragging = false;
-    let startX, startY;
-    let rotX = 0, rotY = 0;
+                <h1 class="font-serif text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+                    Sabores de Nuestra Tierra
+                </h1>
+                
+                <p class="font-serif italic text-lg sm:text-2xl text-nicaser-maiz mb-6 max-w-2xl">
+                    Gastronomía del Norte y Centro de Nicaragua
+                </p>
 
-    const container3D = document.getElementById('3d-container');
+                <p class="text-xs sm:text-base text-nicaser-maizSuave/80 max-w-2xl mb-8 font-light leading-relaxed">
+                    Un recorrido culinario por la historia, técnicas ancestrales e identidad campesina de Matagalpa, Jinotega, Estelí, Madriz, Nueva Segovia, Boaco, Chontales y Río San Juan.
+                </p>
 
-    container3D.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-    });
+                <!-- Interactive Quick Feature Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-3xl">
+                    <div class="glass-card p-3 rounded-xl flex flex-col items-center text-center interactive-card cursor-pointer" onclick="goToSlide(3)">
+                        <i class="fa-solid fa-wheat-awn text-2xl text-nicaser-maiz mb-1.5"></i>
+                        <span class="font-semibold text-xs text-white">Güirila & Maíz</span>
+                        <span class="text-[10px] text-nicaser-maizLight mt-0.5">Explorar Norte</span>
+                    </div>
+                    <div class="glass-card p-3 rounded-xl flex flex-col items-center text-center interactive-card cursor-pointer" onclick="goToSlide(4)">
+                        <i class="fa-solid fa-[#D4AF37] fa-cookie text-2xl text-nicaser-terracota mb-1.5"></i>
+                        <span class="font-semibold text-xs text-white">Rosquillas & Café</span>
+                        <span class="text-[10px] text-nicaser-maizLight mt-0.5">Somoto & Jinotega</span>
+                    </div>
+                    <div class="glass-card p-3 rounded-xl flex flex-col items-center text-center interactive-card cursor-pointer" onclick="goToSlide(5)">
+                        <i class="fa-solid fa-cheese text-2xl text-nicaser-gold mb-1.5"></i>
+                        <span class="font-semibold text-xs text-white">Cuna de Lácteos</span>
+                        <span class="text-[10px] text-nicaser-maizLight mt-0.5">Chontales & Boaco</span>
+                    </div>
+                    <div class="glass-card p-3 rounded-xl flex flex-col items-center text-center interactive-card cursor-pointer" onclick="goToSlide(6)">
+                        <i class="fa-solid fa-mug-hot text-2xl text-nicaser-platanoLight mb-1.5"></i>
+                        <span class="font-semibold text-xs text-white">Bebidas Autóctonas</span>
+                        <span class="text-[10px] text-nicaser-maizLight mt-0.5">Pinolillo & Cususa</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
+        <!-- ================= SLIDE 2: INTRODUCCIÓN E IDENTIDAD ================= -->
+        <section class="slide" id="slide-2">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Fundamentos Culturales</span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">Identidad & Raíces Culinarias</h2>
+                </div>
 
-      rotY += deltaX * 0.5;
-      rotX -= deltaY * 0.5;
+                <!-- Interactive Pillars -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                    <!-- Pillar 1 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card relative overflow-hidden group">
+                        <div class="w-12 h-12 rounded-xl bg-nicaser-maiz/20 border border-nicaser-maiz/40 flex items-center justify-center text-nicaser-maiz text-2xl mb-3">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-nicaser-maiz mb-1.5">El Sagrado Maíz</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed">
+                            Nuestra herencia aborigen. En las montañas, el maíz no es solo alimento: es la base espiritual, económica y gastronómica de la comunidad.
+                        </p>
+                        <div class="mt-4 pt-3 border-t border-nicaser-maiz/20 text-[11px] text-nicaser-maizLight font-semibold flex items-center justify-between">
+                            <span>Variedades: Pujagua, Blanco, Amarillo</span>
+                            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                        </div>
+                    </div>
 
-      card3D.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-      startX = e.clientX;
-      startY = e.clientY;
-    });
+                    <!-- Pillar 2 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card relative overflow-hidden group">
+                        <div class="w-12 h-12 rounded-xl bg-nicaser-terracota/20 border border-nicaser-terracota/40 flex items-center justify-center text-nicaser-terracota text-2xl mb-3">
+                            <i class="fa-solid fa-mountain-sun"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-nicaser-terracota mb-1.5">Clima de Nebliselva</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed">
+                            Las temperaturas frescas de las cordilleras norteñas exigieron una dieta calórica, reconfortante y caliente: sopas espesas, guisos potentes y café aromático.
+                        </p>
+                        <div class="mt-4 pt-3 border-t border-nicaser-terracota/20 text-[11px] text-nicaser-maizLight font-semibold flex items-center justify-between">
+                            <span>Sazones reconfortantes</span>
+                            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                        </div>
+                    </div>
 
-    window.addEventListener('mouseup', () => { isDragging = false; });
+                    <!-- Pillar 3 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card relative overflow-hidden group">
+                        <div class="w-12 h-12 rounded-xl bg-nicaser-platano/20 border border-nicaser-platano/40 flex items-center justify-center text-nicaser-platanoLight text-2xl mb-3">
+                            <i class="fa-solid fa-fire-burner"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-1.5">Fuego & Horno de Barro</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed">
+                            Cocción lenta con leña de roble y guayabo. Las cazuelas de barro curado y las hojas de plátano ahumadas otorgan un aroma inconfundible.
+                        </p>
+                        <div class="mt-4 pt-3 border-t border-nicaser-platano/20 text-[11px] text-nicaser-maizLight font-semibold flex items-center justify-between">
+                            <span>Técnicas ancestrales</span>
+                            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                        </div>
+                    </div>
+                </div>
 
-    function reset3DRotation() {
-      rotX = 10;
-      rotY = 15;
-      card3D.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-    }
+                <!-- Interactive Region Selector Card -->
+                <div class="glass-card p-5 rounded-2xl border border-nicaser-maiz/30">
+                    <h4 class="font-serif font-bold text-base text-nicaser-maiz mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot"></i> Haz clic para explorar la distribución territorial:
+                    </h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <button onclick="showRegionDetail('norte')" class="p-2.5 rounded-xl bg-nicaser-terracota/20 border border-nicaser-terracota/40 text-left hover:bg-nicaser-terracota/40 transition">
+                            <span class="block text-xs font-bold text-white">Región Norte</span>
+                            <span class="text-[10px] text-nicaser-maizLight">5 Departamentos</span>
+                        </button>
+                        <button onclick="showRegionDetail('centro')" class="p-2.5 rounded-xl bg-nicaser-platano/20 border border-nicaser-platano/40 text-left hover:bg-nicaser-platano/40 transition">
+                            <span class="block text-xs font-bold text-white">Región Centro</span>
+                            <span class="text-[10px] text-nicaser-maizLight">3 Departamentos</span>
+                        </button>
+                        <button onclick="showRegionDetail('maiz')" class="p-2.5 rounded-xl bg-nicaser-maiz/20 border border-nicaser-maiz/40 text-left hover:bg-nicaser-maiz/40 transition">
+                            <span class="block text-xs font-bold text-white">Ruta del Maíz</span>
+                            <span class="text-[10px] text-nicaser-maizLight">Jalapa & Somoto</span>
+                        </button>
+                        <button onclick="showRegionDetail('lacteos')" class="p-2.5 rounded-xl bg-nicaser-barro/30 border border-nicaser-gold/40 text-left hover:bg-nicaser-barro/50 transition">
+                            <span class="block text-xs font-bold text-white">Ruta Láctea</span>
+                            <span class="text-[10px] text-nicaser-maizLight">Chontales & Boaco</span>
+                        </button>
+                    </div>
+                    <div id="regionDetailBox" class="mt-3 p-3 rounded-xl bg-nicaser-cafe/90 border border-nicaser-maiz/20 text-xs text-nicaser-maizSuave/90 font-light">
+                        👈 Haz clic en cualquiera de las zonas de arriba para ver detalles de su clima e impacto culinario.
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    // Simulación de Pre-orden Express
-    function preOrderDish() {
-      closeModal();
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      toastMsg.innerText = `¡Pre-orden de ${activeDish.name} enviada! Pasa retirando a la caja express.`;
+        <!-- ================= SLIDE 3: PLATILLOS ESTRELLA DEL NORTE ================= -->
+        <section class="slide" id="slide-3">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Matagalpa • Jinotega • Estelí • Madriz • N. Segovia</span>
+                        <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">Platillos Estrella del Norte</h2>
+                    </div>
+                    <span class="text-xs text-nicaser-maizLight bg-nicaser-terracota/30 border border-nicaser-terracota/60 px-3 py-1 rounded-full mt-2 md:mt-0 font-medium">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i> Haz clic en un platillo para ver su receta
+                    </span>
+                </div>
 
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
+                <!-- Dishes Interactive Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    
+                    <!-- Dish 1: Güirila -->
+                    <div onclick="openDishModal('güirila')" class="glass-card p-4 rounded-xl interactive-card cursor-pointer flex gap-3 items-center group">
+                        <div class="w-16 h-16 rounded-xl bg-nicaser-maiz/20 border border-nicaser-maiz/40 flex-shrink-0 flex items-center justify-center relative overflow-hidden">
+                            <!-- SVG Güirila Icon -->
+                            <svg viewBox="0 0 64 64" class="w-10 h-10">
+                                <ellipse cx="32" cy="38" rx="26" ry="16" fill="#2D5A27" />
+                                <ellipse cx="32" cy="34" rx="22" ry="13" fill="#E6A13B" stroke="#FAF5EA" stroke-width="1.5" />
+                                <ellipse cx="32" cy="30" rx="12" ry="6" fill="#FAF5EA" opacity="0.9" />
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-base text-nicaser-maiz group-hover:text-white transition">Güirila con Queso & Crema</h3>
+                                <i class="fa-solid fa-circle-plus text-nicaser-maiz opacity-60 group-hover:opacity-100"></i>
+                            </div>
+                            <p class="text-xs text-nicaser-maizSuave/80 mt-1 line-clamp-2">Tortilla dulce de maíz tierno (jilote) palmeada en hoja de plátano. Servida con queso de hojaldra y crema ácida.</p>
+                        </div>
+                    </div>
 
-      setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 4000);
-    }
+                    <!-- Dish 2: Nacatamal Norteño -->
+                    <div onclick="openDishModal('nacatamal')" class="glass-card p-4 rounded-xl interactive-card cursor-pointer flex gap-3 items-center group">
+                        <div class="w-16 h-16 rounded-xl bg-nicaser-terracota/20 border border-nicaser-terracota/40 flex-shrink-0 flex items-center justify-center">
+                            <!-- SVG Nacatamal Icon -->
+                            <svg viewBox="0 0 64 64" class="w-10 h-10">
+                                <path d="M12 22 Q32 14 52 22 L48 48 Q32 54 16 48 Z" fill="#2D5A27" stroke="#4B8843" stroke-width="2" />
+                                <path d="M10 28 Q32 36 54 28" stroke="#E6A13B" stroke-width="2.5" fill="none" />
+                                <path d="M32 18 L32 51" stroke="#E6A13B" stroke-width="2" fill="none" />
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-base text-nicaser-terracota group-hover:text-white transition">Nacatamal Norteño & Montucas</h3>
+                                <i class="fa-solid fa-circle-plus text-nicaser-terracota opacity-60 group-hover:opacity-100"></i>
+                            </div>
+                            <p class="text-xs text-nicaser-maizSuave/80 mt-1 line-clamp-2">Masa sazonada con naranja agria y recado. En el norte destaca por su toque picante y la variante dulce: la Montuca.</p>
+                        </div>
+                    </div>
 
-    // Inicialización
-    document.addEventListener('DOMContentLoaded', () => {
-      renderDishes(dishes);
-    });
-  </script>
+                    <!-- Dish 3: Cecina & Carne Asada -->
+                    <div onclick="openDishModal('cecina')" class="glass-card p-4 rounded-xl interactive-card cursor-pointer flex gap-3 items-center group">
+                        <div class="w-16 h-16 rounded-xl bg-nicaser-platano/20 border border-nicaser-platano/40 flex-shrink-0 flex items-center justify-center">
+                            <!-- SVG Meat Icon -->
+                            <svg viewBox="0 0 64 64" class="w-10 h-10">
+                                <path d="M12 36 C10 20 28 12 44 20 C56 26 52 48 38 52 C22 56 14 48 12 36 Z" fill="#8C3818" stroke="#C85A32" stroke-width="2" />
+                                <path d="M22 26 Q34 32 42 28" stroke="#E6A13B" stroke-width="2" fill="none" />
+                                <path d="M20 38 Q30 42 40 36" stroke="#FAF5EA" stroke-width="1.5" fill="none" opacity="0.8" />
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-base text-white group-hover:text-nicaser-maiz transition">Carne Asada & Cecina Norteña</h3>
+                                <i class="fa-solid fa-circle-plus text-nicaser-platanoLight opacity-60 group-hover:opacity-100"></i>
+                            </div>
+                            <p class="text-xs text-nicaser-maizSuave/80 mt-1 line-clamp-2">Carne de res marinda con achiote y ajo, secada al sol de la cordillera o ahumada con leña de roble.</p>
+                        </div>
+                    </div>
+
+                    <!-- Dish 4: Sopa de Gallina India -->
+                    <div onclick="openDishModal('sopa')" class="glass-card p-4 rounded-xl interactive-card cursor-pointer flex gap-3 items-center group">
+                        <div class="w-16 h-16 rounded-xl bg-nicaser-barro/30 border border-nicaser-gold/40 flex-shrink-0 flex items-center justify-center">
+                            <!-- SVG Soup Bowl Icon -->
+                            <svg viewBox="0 0 64 64" class="w-10 h-10">
+                                <path d="M12 28 Q10 48 32 50 Q54 48 52 28 Z" fill="#8C3818" stroke="#D4AF37" stroke-width="2" />
+                                <ellipse cx="32" cy="28" rx="20" ry="6" fill="#E6A13B" />
+                                <circle cx="28" cy="28" r="2" fill="#FAF5EA" />
+                                <circle cx="36" cy="27" r="2.5" fill="#FAF5EA" />
+                            </svg>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <h3 class="font-bold text-base text-nicaser-gold group-hover:text-white transition">Sopa de Gallina India</h3>
+                                <i class="fa-solid fa-circle-plus text-nicaser-gold opacity-60 group-hover:opacity-100"></i>
+                            </div>
+                            <p class="text-xs text-nicaser-maizSuave/80 mt-1 line-clamp-2">El plato dominguero por excelencia. Caldo denso enriquecido con albóndigas de maíz, chayote, elote y yerba buena.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Quick Fact Banner -->
+                <div class="p-3 rounded-xl bg-nicaser-cafeLight/80 border border-nicaser-maiz/20 flex items-center gap-3 text-xs text-nicaser-maizSuave/90">
+                    <i class="fa-solid fa-lightbulb text-nicaser-maiz text-base flex-shrink-0"></i>
+                    <span><strong>¿Sabías que?</strong> En Jinotega y Matagalpa la Güirila se acompaña obligatoriamente con "queso de hojaldra", un queso artesanal con capas elásticas y jugo lácteo fresco.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SLIDE 4: ROSQUILLAS Y CAFÉ DE ALTURA ================= -->
+        <section class="slide" id="slide-4">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Somoto • Yalagüina • Jalapa • Matagalpa • Jinotega</span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">El Arte del Maíz: Rosquillas & Café</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    
+                    <!-- Card 1: Rosquillas Somoteñas -->
+                    <div class="glass-card p-5 rounded-2xl border-t-4 border-t-nicaser-maiz relative">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-lg bg-nicaser-maiz/20 flex items-center justify-center text-nicaser-maiz text-xl">
+                                    <i class="fa-solid fa-cookie"></i>
+                                </div>
+                                <h3 class="font-serif font-bold text-xl text-nicaser-maiz">Rosquillas & Viejitas</h3>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider font-bold bg-nicaser-maiz/20 text-nicaser-maiz px-2.5 py-1 rounded-full border border-nicaser-maiz/30">Madriz & N. Segovia</span>
+                        </div>
+
+                        <p class="text-xs text-nicaser-maizSuave/85 leading-relaxed mb-4">
+                            Símbolo culinario de Somoto y Yalagüina. Hechas de masa de maíz seleccionada, mezclada con abundante cuajada fresca, mantequilla y manteca de cerdo.
+                        </p>
+
+                        <!-- Interactive Tabbed Sub-items -->
+                        <div class="bg-nicaser-cafe/80 p-3 rounded-xl border border-nicaser-maiz/20">
+                            <div class="flex border-b border-nicaser-maiz/20 pb-2 mb-2 gap-2 text-xs">
+                                <button onclick="switchRosquillaTab('rosquilla')" id="btnRosquilla" class="font-bold text-nicaser-maiz border-b-2 border-nicaser-maiz pb-0.5">Rosquilla Tradicional</button>
+                                <button onclick="switchRosquillaTab('viejita')" id="btnViejita" class="text-nicaser-maizSuave/60 hover:text-white pb-0.5">La Viejita</button>
+                                <button onclick="switchRosquillaTab('hojaldre')" id="btnHojaldre" class="text-nicaser-maizSuave/60 hover:text-white pb-0.5">Sopaipilla</button>
+                            </div>
+                            <div id="rosquillaTabText" class="text-xs text-nicaser-maizSuave/90 min-h-[48px]">
+                                <strong>Doble horneado:</strong> Se hornea una primera vez para cocer la masa y una segunda vez a fuego lento en horno de barro con leña de roble para tostarla sin quemarla.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Café de Altura -->
+                    <div class="glass-card p-5 rounded-2xl border-t-4 border-t-nicaser-terracota relative">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-lg bg-nicaser-terracota/20 flex items-center justify-center text-nicaser-terracota text-xl">
+                                    <i class="fa-solid fa-mug-saucer"></i>
+                                </div>
+                                <h3 class="font-serif font-bold text-xl text-nicaser-terracota">Café de Altura</h3>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider font-bold bg-nicaser-terracota/20 text-nicaser-terracota px-2.5 py-1 rounded-full border border-nicaser-terracota/30">Matagalpa & Jinotega</span>
+                        </div>
+
+                        <p class="text-xs text-nicaser-maizSuave/85 leading-relaxed mb-4">
+                            Cultivado bajo sombra entre 1,000 y 1,600 metros de altura en las montañas del norte. Granos arábicos de estricta altura (Strictly Hard Bean).
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="p-2.5 rounded-xl bg-nicaser-cafe/80 border border-nicaser-terracota/20">
+                                <span class="block font-bold text-nicaser-terracota text-[11px]"><i class="fa-solid fa-droplet text-nicaser-maiz mr-1"></i> Perfil de Taza</span>
+                                <span class="text-[10px] text-nicaser-maizSuave/80">Notas a chocolate amargo, miel, cítricos dulces y cuerpo cremoso.</span>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-nicaser-cafe/80 border border-nicaser-terracota/20">
+                                <span class="block font-bold text-nicaser-terracota text-[11px]"><i class="fa-solid fa-fire text-nicaser-maiz mr-1"></i> Maridaje Perfecto</span>
+                                <span class="text-[10px] text-nicaser-maizSuave/80">El café amargo caliente realza el dulzor del atado de dulce de las Viejitas.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Interactive Pairing Banner -->
+                <div class="glass-card p-3.5 rounded-xl flex items-center justify-between border border-nicaser-gold/40">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-nicaser-gold/20 flex items-center justify-center text-nicaser-gold text-lg">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <span class="text-xs text-white font-medium">El Ritual de la Tarde: Una rosquilla sumergida 3 segundos en café humeante.</span>
+                    </div>
+                    <button onclick="triggerRosquillaAnimation()" class="px-3 py-1.5 rounded-lg bg-nicaser-gold text-nicaser-cafe font-bold text-xs hover:brightness-110 transition flex-shrink-0">
+                        Probar Ritual
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SLIDE 5: GASTRONOMÍA DEL CENTRO ================= -->
+        <section class="slide" id="slide-5">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Boaco • Chontales • Río San Juan</span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">Tierra Ganadera: Lácteos & Sopas del Centro</h2>
+                </div>
+
+                <!-- Interactive Dairy & Meat Explorer -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                    
+                    <!-- Feature 1: Queso Chontaleño -->
+                    <div class="glass-card p-4 rounded-xl interactive-card border-l-4 border-l-nicaser-gold">
+                        <div class="w-10 h-10 rounded-lg bg-nicaser-gold/20 flex items-center justify-center text-nicaser-gold text-xl mb-2">
+                            <i class="fa-solid fa-cheese"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-nicaser-gold mb-1">Cuna de Lácteos</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            Chontales y Boaco producen los mejores quesos del país gracias al pastoreo en praderas frescas.
+                        </p>
+                        <ul class="text-[11px] text-nicaser-maizLight space-y-1 bg-nicaser-cafe/60 p-2 rounded-lg">
+                            <li><i class="fa-solid fa-check text-nicaser-gold mr-1.5"></i> <strong>Queso Ahumado:</strong> Curado sobre humo de leña.</li>
+                            <li><i class="fa-solid fa-check text-nicaser-gold mr-1.5"></i> <strong>Quesillo Chontaleño:</strong> Elásticos hilos con cebollita.</li>
+                            <li><i class="fa-solid fa-check text-nicaser-gold mr-1.5"></i> <strong>Cuajada de Ternero:</strong> Con sal fina de piedra.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 2: Sopa de Mondongo -->
+                    <div class="glass-card p-4 rounded-xl interactive-card border-l-4 border-l-nicaser-terracota">
+                        <div class="w-10 h-10 rounded-lg bg-nicaser-terracota/20 flex items-center justify-center text-nicaser-terracota text-xl mb-2">
+                            <i class="fa-solid fa-bowl-rice"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-nicaser-terracota mb-1">Sopa de Mondongo</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            Especialidad emblemática de Masatepe y Boaco. Preparada con panza de res minuciosamente lavada con naranja agria.
+                        </p>
+                        <ul class="text-[11px] text-nicaser-maizLight space-y-1 bg-nicaser-cafe/60 p-2 rounded-lg">
+                            <li><i class="fa-solid fa-check text-nicaser-terracota mr-1.5"></i> Caldo espeso con verduras y maíz molido.</li>
+                            <li><i class="fa-solid fa-check text-nicaser-terracota mr-1.5"></i> Acompañado de tortitas de arroz y aguacate.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Feature 3: Lomo Pinchado & Guisos -->
+                    <div class="glass-card p-4 rounded-xl interactive-card border-l-4 border-l-nicaser-platanoLight">
+                        <div class="w-10 h-10 rounded-lg bg-nicaser-platano/20 flex items-center justify-center text-nicaser-platanoLight text-xl mb-2">
+                            <i class="fa-solid fa-drumstick-bite"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-white mb-1">Lomo Pinchado & Guisos</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            La abundante ganadería vacuna dio origen a platillos agridulces de larga cocción.
+                        </p>
+                        <ul class="text-[11px] text-nicaser-maizLight space-y-1 bg-nicaser-cafe/60 p-2 rounded-lg">
+                            <li><i class="fa-solid fa-check text-nicaser-platanoLight mr-1.5"></i> <strong>Lomo Pinchado:</strong> Marinado en chicha fuerte.</li>
+                            <li><i class="fa-solid fa-check text-nicaser-platanoLight mr-1.5"></i> <strong>Guiso de Pipián:</strong> Con crema pura y queso.</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Interactive Comparison Widget -->
+                <div class="glass-card p-4 rounded-xl border border-nicaser-maiz/30">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-nicaser-maiz">Comparativa Culinaria: Norte vs Centro</span>
+                        <span class="text-[10px] text-nicaser-maizSuave/60">Pasa el cursor / Toca para alternar</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="p-2.5 rounded-lg bg-nicaser-terracota/20 border border-nicaser-terracota/30">
+                            <strong class="block text-nicaser-terracota mb-1">Norte (Montaña):</strong>
+                            <span class="text-[11px] text-nicaser-maizSuave/90">Predominio de maíz fresco (jilote), carne de cerdo, aves de patio y café de altura.</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-nicaser-platano/20 border border-nicaser-platano/30">
+                            <strong class="block text-nicaser-platanoLight mb-1">Centro (Savana & Pampa):</strong>
+                            <span class="text-[11px] text-nicaser-maizSuave/90">Predominio de lácteos madurados, carne de res, sopas de visceras y derivados de caña.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SLIDE 6: BEBIDAS TRADICIONALES ================= -->
+        <section class="slide" id="slide-6">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Elixir de Nuestros Antepasados</span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">Bebidas Tradicionales</h2>
+                </div>
+
+                <!-- Drinks Interactive Carousel / Selector -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+                    
+                    <!-- Drink 1 -->
+                    <div onclick="showDrinkDetail('pinolillo')" class="glass-card p-3 rounded-xl interactive-card cursor-pointer text-center group">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-nicaser-maiz/20 border border-nicaser-maiz/40 flex items-center justify-center text-nicaser-maiz text-xl mb-2 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-glass-water"></i>
+                        </div>
+                        <h3 class="font-bold text-xs text-nicaser-maiz">Pinolillo</h3>
+                        <span class="text-[10px] text-nicaser-maizSuave/60 block mt-0.5">Maíz + Cacao</span>
+                    </div>
+
+                    <!-- Drink 2 -->
+                    <div onclick="showDrinkDetail('cacao')" class="glass-card p-3 rounded-xl interactive-card cursor-pointer text-center group">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-nicaser-terracota/20 border border-nicaser-terracota/40 flex items-center justify-center text-nicaser-terracota text-xl mb-2 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-bottle-droplet"></i>
+                        </div>
+                        <h3 class="font-bold text-xs text-nicaser-terracota">Cacao con Leche</h3>
+                        <span class="text-[10px] text-nicaser-maizSuave/60 block mt-0.5">Sabor cremoso</span>
+                    </div>
+
+                    <!-- Drink 3 -->
+                    <div onclick="showDrinkDetail('calcetin')" class="glass-card p-3 rounded-xl interactive-card cursor-pointer text-center group">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-nicaser-barro/40 border border-nicaser-gold/40 flex items-center justify-center text-nicaser-gold text-xl mb-2 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-filter"></i>
+                        </div>
+                        <h3 class="font-bold text-xs text-nicaser-gold">Café de Calcetín</h3>
+                        <span class="text-[10px] text-nicaser-maizSuave/60 block mt-0.5">Colado en tela</span>
+                    </div>
+
+                    <!-- Drink 4 -->
+                    <div onclick="showDrinkDetail('cususa')" class="glass-card p-3 rounded-xl interactive-card cursor-pointer text-center group">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-nicaser-platano/20 border border-nicaser-platano/40 flex items-center justify-center text-nicaser-platanoLight text-xl mb-2 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-flask"></i>
+                        </div>
+                        <h3 class="font-bold text-xs text-white">La Cususa</h3>
+                        <span class="text-[10px] text-nicaser-maizSuave/60 block mt-0.5">Aguardiente criollo</span>
+                    </div>
+
+                    <!-- Drink 5 -->
+                    <div onclick="showDrinkDetail('chicha')" class="glass-card p-3 rounded-xl interactive-card cursor-pointer text-center group col-span-2 sm:col-span-1">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-nicaser-maizLight/20 border border-nicaser-maizLight/40 flex items-center justify-center text-nicaser-maizLight text-xl mb-2 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-wine-glass"></i>
+                        </div>
+                        <h3 class="font-bold text-xs text-nicaser-maizLight">Chicha de Maíz</h3>
+                        <span class="text-[10px] text-nicaser-maizSuave/60 block mt-0.5">Fermentado patrio</span>
+                    </div>
+
+                </div>
+
+                <!-- Dynamic Detail Box for Selected Drink -->
+                <div id="drinkDetailBox" class="glass-card p-5 rounded-2xl border border-nicaser-maiz/40 relative">
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-nicaser-maiz/20 flex-shrink-0 flex items-center justify-center text-nicaser-maiz text-3xl">
+                            <i class="fa-solid fa-whiskey-glass"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 id="drinkTitle" class="font-serif font-bold text-xl text-nicaser-maiz">Pinolillo Nicaragüense</h4>
+                                <span id="drinkTag" class="text-[10px] px-2 py-0.5 rounded bg-nicaser-maiz/20 text-nicaser-maiz font-semibold">Bebida Nacional</span>
+                            </div>
+                            <p id="drinkDesc" class="text-xs text-nicaser-maizSuave/90 mt-1 leading-relaxed">
+                                Preparado a base de maíz blanco tostado y canela molidos finamente junto con semillas de cacao tostadas. Se sirve tradicionalmente en guacal o jícara de árbol de jícaro labrado a mano.
+                            </p>
+                            <div id="drinkIngredients" class="mt-3 flex flex-wrap gap-1.5">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-nicaser-cafe/80 text-nicaser-maizLight border border-nicaser-maiz/20">Maíz Tostado</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-nicaser-cafe/80 text-nicaser-maizLight border border-nicaser-maiz/20">Cacao</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-nicaser-cafe/80 text-nicaser-maizLight border border-nicaser-maiz/20">Canela</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-nicaser-cafe/80 text-nicaser-maizLight border border-nicaser-maiz/20">Jícara Tradicional</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SLIDE 7: IMPACTO CULTURAL Y ECONÓMICO ================= -->
+        <section class="slide" id="slide-7">
+            <div class="max-w-5xl w-full my-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-nicaser-maiz">Patrimonio Vivo & Desarrollo Local</span>
+                    <h2 class="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">Impacto Cultural & Económico</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                    
+                    <!-- Impact 1 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card border-t-4 border-t-nicaser-maiz">
+                        <div class="text-3xl text-nicaser-maiz mb-3">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">Turismo Gastronómico</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            La "Ruta del Café" en Jinotega/Matagalpa y la "Ruta de la Rosquilla" en Madriz atraen a miles de turistas anuales, dinamizando la hotelería y la artesanía.
+                        </p>
+                        <span class="text-[11px] text-nicaser-maiz font-semibold block">
+                            <i class="fa-solid fa-arrow-trend-up mr-1"></i> Motor de Divisas Rurales
+                        </span>
+                    </div>
+
+                    <!-- Impact 2 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card border-t-4 border-t-nicaser-terracota">
+                        <div class="text-3xl text-nicaser-terracota mb-3">
+                            <i class="fa-solid fa-hands-holding-child"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">Empoderamiento Femenino</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            Más del 85% de los talleres artesanales de rosquillas y puestos de güirila son liderados por mujeres matronas que transmiten el oficio a sus hijas.
+                        </p>
+                        <span class="text-[11px] text-nicaser-terracota font-semibold block">
+                            <i class="fa-solid fa-heart mr-1"></i> Legado Matriarcal
+                        </span>
+                    </div>
+
+                    <!-- Impact 3 -->
+                    <div class="glass-card p-5 rounded-2xl interactive-card border-t-4 border-t-nicaser-platanoLight">
+                        <div class="text-3xl text-nicaser-platanoLight mb-3">
+                            <i class="fa-solid fa-wheat-field"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white mb-2">Ferias del Maíz</h3>
+                        <p class="text-xs text-nicaser-maizSuave/80 leading-relaxed mb-3">
+                            Celebradas anualmente en Jalapa, Matagalpa y Boaco. Espacios de competencia, rescate de semillas criollas y orgullo de la soberanía alimentaria.
+                        </p>
+                        <span class="text-[11px] text-nicaser-platanoLight font-semibold block">
+                            <i class="fa-solid fa-award mr-1"></i> Soberanía & Semillas Criollas
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Interactive Quote -->
+                <div class="glass-card p-4 rounded-xl border border-nicaser-gold/30 text-center">
+                    <p class="font-serif italic text-sm text-nicaser-maizLight">
+                        "Preservar una receta no es solo cocinar: es guardar viva la memoria geográfica y el sudor de quienes cultivan la tierra."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SLIDE 8: CIERRE Y CONCLUSIÓN ================= -->
+        <section class="slide" id="slide-8">
+            <div class="max-w-4xl text-center flex flex-col items-center my-auto">
+                
+                <!-- SVG Decorative Heart & Bowl -->
+                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-nicaser-terracota via-nicaser-maiz to-nicaser-platano flex items-center justify-center text-white text-4xl mb-4 shadow-2xl pulse-subtle">
+                    <i class="fa-solid fa-heart-circle-check"></i>
+                </div>
+
+                <h2 class="font-serif text-3xl sm:text-5xl font-extrabold text-white mb-3">
+                    El Alma de Nicaragua en Cada Platillo
+                </h2>
+
+                <p class="text-sm sm:text-lg text-nicaser-maiz italic max-w-2xl mb-6 font-serif">
+                    "Nuestra gastronomía del norte y centro refleja la calidez, la resiliencia y el trabajo digno del pueblo campesino."
+                </p>
+
+                <!-- Interactive Thank You & Action Box -->
+                <div class="glass-card p-6 rounded-3xl max-w-lg w-full mb-6 border border-nicaser-maiz/40">
+                    <h3 class="text-xl font-bold text-white mb-2">¡Muchas Gracias por su Atención!</h3>
+                    <p class="text-xs text-nicaser-maizSuave/80 mb-5 leading-relaxed">
+                        Exposición presentada por el Equipo de Gastronomía e Identidad Nicaragüense.
+                    </p>
+                    
+                    <div class="flex justify-center gap-3">
+                        <button onclick="goToSlide(1)" class="px-4 py-2 rounded-xl bg-nicaser-cafeLight border border-nicaser-maiz/40 text-nicaser-maiz font-semibold text-xs hover:bg-nicaser-terracota hover:text-white transition">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reiniciar
+                        </button>
+                        <button onclick="toggleSpeakerPanel()" class="px-4 py-2 rounded-xl bg-nicaser-terracota text-white font-bold text-xs hover:bg-nicaser-barro transition shadow-lg">
+                            <i class="fa-solid fa-comments mr-1"></i> Ver Preguntas & Guion
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Floating Speaker Notes Drawer -->
+    <aside id="speakerPanel" class="fixed right-0 top-16 bottom-16 w-full sm:w-96 bg-nicaser-cafe/95 backdrop-blur-xl border-l border-nicaser-maiz/30 z-30 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col p-4 overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-nicaser-maiz/20 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-users-viewfinder text-nicaser-maiz text-lg"></i>
+                <h3 class="font-serif font-bold text-base text-white">Guion para 2 Expositores</h3>
+            </div>
+            <button onclick="toggleSpeakerPanel()" class="text-nicaser-maizSuave/60 hover:text-white p-1">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="text-xs text-nicaser-maizLight mb-3 font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-bookmark"></i>
+            <span>Guion activo para Diapositiva <span id="speakerSlideNum">1</span></span>
+        </div>
+
+        <!-- Dynamic Content per Slide -->
+        <div id="speakerContent" class="space-y-4 flex-grow text-xs">
+            <!-- Populated via JS -->
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-nicaser-maiz/20 text-[10px] text-nicaser-maizSuave/60 text-center">
+            💡 Mantengan contacto visual con el público mientras alternan las intervenciones.
+        </div>
+    </aside>
+
+    <!-- Modal for Detailed Dish Recipes -->
+    <div id="dishModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-modal max-w-md w-full rounded-2xl p-6 relative border border-nicaser-maiz/40 text-nicaser-maizSuave">
+            <button onclick="closeDishModal()" class="absolute top-4 right-4 text-nicaser-maizSuave/60 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modalBody">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Control Footer Bar -->
+    <footer class="fixed bottom-0 left-0 w-full z-40 px-4 md:px-8 py-3 bg-nicaser-cafe/90 backdrop-blur-md border-t border-nicaser-maiz/20 flex justify-between items-center">
+        <!-- Visual Progress Bar Top Indicator -->
+        <div class="absolute top-0 left-0 h-1 bg-gradient-to-r from-nicaser-terracota via-nicaser-maiz to-nicaser-platanoLight transition-all duration-300" id="progressBar" style="width: 12.5%;"></div>
+
+        <!-- Left: Slide Navigation Dots -->
+        <div class="hidden sm:flex items-center gap-1.5" id="dotsContainer">
+            <!-- Dynamic Dots via JS -->
+        </div>
+
+        <!-- Center: Slide Prev / Next Buttons -->
+        <div class="flex items-center gap-3 mx-auto sm:mx-0">
+            <button onclick="prevSlide()" class="w-10 h-10 rounded-full bg-nicaser-cafeLight border border-nicaser-maiz/30 text-nicaser-maiz flex items-center justify-center hover:bg-nicaser-terracota hover:text-white transition shadow-md active:scale-95">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <button onclick="nextSlide()" class="px-5 py-2 rounded-full bg-gradient-to-r from-nicaser-terracota to-nicaser-maiz text-white font-bold text-xs hover:brightness-110 transition flex items-center gap-2 shadow-lg active:scale-95">
+                <span>Siguiente</span>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+        </div>
+
+        <!-- Right: Helper Tools -->
+        <div class="flex items-center gap-2">
+            <button onclick="toggleFullScreen()" class="w-9 h-9 rounded-full bg-nicaser-cafeLight border border-nicaser-maiz/30 text-nicaser-maizLight flex items-center justify-center hover:text-white transition" title="Pantalla Completa">
+                <i class="fa-solid fa-expand text-xs"></i>
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+        let isSpeakerPanelOpen = false;
+
+        // Speaker Scripts Data Dictionary for all 8 Slides
+        const speakerScripts = {
+            1: {
+                exp1: "¡Buenas tardes a todos! Hoy los invitamos a realizar un recorrido culinario fascinante por el Norte y Centro de Nicaragua. Hablaremos de las tradiciones de nuestras cordilleras y pampas ganaderas.",
+                exp2: "A lo largo de esta exposición, veremos cómo el clima fresco y la tierra fértil moldearon platillos únicos que son un verdadero orgullo patrio e identidad viva."
+            },
+            2: {
+                exp1: "Comenzamos en la raíz: el sagrado maíz. En las montañas norteñas, el maíz no es un simple ingrediente, es el pilar de la alimentación campesina y prehispánica.",
+                exp2: "Además, las bajas temperaturas de Jinotega o Matagalpa exigieron una gastronomía reconfortante de sopas calientes, horneados en leña de roble y bebidas energéticas."
+            },
+            3: {
+                exp1: "Llegamos a los platillos estrella del Norte. Mencionemos la Güirila: hecha exclusivamente de maíz tierno o jilote, palmeada en hoja de plátano con queso de hojaldra y crema ácida.",
+                exp2: "También destacan el nacatamal norteño con su sazón adobada en naranja agria, las montucas dulces, la cecina ahumada al sol y la reconfortante sopa de gallina india."
+            },
+            4: {
+                exp1: "Hablemos de Madriz y Nueva Segovia. Las Rosquillas de Somoto y Yalagüina son un milagro artesanal: maiz seleccionado con cuajada fresca, horneadas dos veces en hornos de barro.",
+                exp2: "Y para acompañarlas, nada como el café de altura de Jinotega y Matagalpa. Cultivado a más de 1,200 metros, ofrece notas achocolatadas que maridan a la perfección."
+            },
+            5: {
+                exp1: "Viajemos ahora al Centro: Chontales, Boaco y Río San Juan. Esta es la cuna ganadera de Nicaragua, famosa por sus quesos ahumados, cuajadas frescas y quesillos.",
+                exp2: "En sopas, la Sopa de Mondongo boaqueña es el ícono dominical por excelencia. Se acompaña con guisos de pipián fresco y lomo pinchado en chicha."
+            },
+            6: {
+                exp1: "Las bebidas autóctonas son pura poesía. El Pinolillo, preparado con maíz y cacao tostado, servido en jícara tradicional, es el símbolo de nuestra identidad.",
+                exp2: "Completamos con el café colado en calcetín de tela, la fermentada Chicha de Maíz y la ancestral Cususa o aguardiente campesino de caña y maíz."
+            },
+            7: {
+                exp1: "Esta gastronomía impacta directamente la economía. Las 'Rutas del Café' y de la 'Rosquilla' generan empleos y atraen turismo sostenible a las zonas rurales.",
+                exp2: "Además, destacamos el liderazgo de las mujeres en los talleres de rosquillas y el valor de las Ferias del Maíz en la preservación de semillas criollas."
+            },
+            8: {
+                exp1: "Concluimos reafirmando que en cada güirila, en cada taza de café y en cada rosquilla está el alma trabajadora y alegre de nuestra Nicaragua.",
+                exp2: "Agradecemos profundamente su atención y quedamos a su entera disposición para responder sus preguntas e inquietudes. ¡Muchas gracias!"
+            }
+        };
+
+        // Dish Recipe Modal Data
+        const dishData = {
+            güirila: {
+                title: "La Güirila Norteña",
+                badge: "Ícono de Matagalpa y Jinotega",
+                icon: "fa-wheat-awn",
+                color: "text-nicaser-maiz",
+                desc: "Platillo elaborado con maíz tierno en estado de jilote. Se muele ligeramente dulce y se palmea directamente sobre una hoja de plátano soasada.",
+                ingredients: ["Maíz tierno (Jilote)", "Pizca de sal", "Hojas de plátano", "Queso de hojaldra", "Crema pura de montaña"]
+            },
+            nacatamal: {
+                title: "Nacatamal Norteño & Montuca",
+                badge: "Tradición de Fin de Semana",
+                icon: "fa-box-tissue",
+                color: "text-nicaser-terracota",
+                desc: "Masa de maíz cascado adobada con recado fresco de tomate, cebolla, chiltoma y naranja agria. En el norte se caracteriza por trozos de cerdo sazonados y hojitas de hierba buena.",
+                ingredients: ["Masa de maíz nixtamalizado", "Carne de cerdo o gallina", "Arroz, papas y chiltoma", "Naranja agria", "Envoltura en hoja de bijagua"]
+            },
+            cecina: {
+                title: "Cecina & Carne Asada Norteña",
+                badge: "Sazón de la Cordillera",
+                icon: "fa-drumstick-bite",
+                color: "text-nicaser-platanoLight",
+                desc: "Cortes delgados de res curados con sal, ajo y jugo de naranja agria, extendidos al sol montañés para secado lento y posterior asado a las brasas.",
+                ingredients: ["Corte de res fino", "Naranja agria criolla", "Ajo machacado y achiote", "Sal de roca", "Gallo pinto y maduro frito"]
+            },
+            sopa: {
+                title: "Sopa de Gallina India",
+                badge: "Remedio del Campo",
+                icon: "fa-bowl-hot",
+                color: "text-nicaser-gold",
+                desc: "Cocida en grandes ollas de barro sobre fuego de leña durante horas. El secreto norteño reside en las albóndigas hechas con la misma masa del maíz y grasa natural de la gallina.",
+                ingredients: ["Gallina criolla de patio", "Albóndigas de maíz sazonadas", "Chayote, elote y yuca", "Yerba buena fresca", "Limón criollo"]
+            }
+        };
+
+        // Drink Details Data
+        const drinkData = {
+            pinolillo: {
+                title: "Pinolillo Nicaragüense",
+                tag: "Patrimonio Nacional",
+                desc: "Mezcla ancestral de maíz blanco tostado y semillas de cacao molidas con canela. Se bebe helado en jícara labrada de árbol de jícaro.",
+                ingredients: ["Maíz Blanco", "Cacao Tostado", "Canela", "Servido en Jícara"]
+            },
+            cacao: {
+                title: "Cacao con Leche",
+                tag: "Favorito de las Tardes",
+                desc: "Semillas de cacao seleccionadas, tostadas al comal, descascaradas a mano y molidas con canela, disueltas en leche fresca de vaca y hielo.",
+                ingredients: ["Grano de Cacao", "Leche Entera", "Canela", "Azúcar de Caña"]
+            },
+            calcetin: {
+                title: "Café de Calcetín",
+                tag: "Tradición Campesina",
+                desc: "Método tradicional de infusión donde el café molido de la montaña se vierte en un colador de tela de algodón o 'calcetín', logrando un cuerpo limpio y aromático.",
+                ingredients: ["Café Arábica Molido", "Agua Hirviendo", "Colador de Tela", "Jarro de Barro"]
+            },
+            cususa: {
+                title: "La Cususa Ancestral",
+                tag: "Aguardiente Criollo",
+                desc: "Bebida espirituosa destilada de forma artesanal a partir de la fermentación del maíz y dulce de rapadura. Utilizada en ritos y celebraciones comunales.",
+                ingredients: ["Maíz Fermentado", "Atado de Dulce", "Destilación Artesanal"]
+            },
+            chicha: {
+                title: "Chicha de Maíz",
+                tag: "Bebida Patronal",
+                desc: "Maíz rosado en grano, nacido o naciendo, molido y cocido con dulce de caña. Colorida y refrescante para las festividades del Santo Patrono.",
+                ingredients: ["Maíz Naciendo", "Atado de Dulce", "Colorante Vegetal Red", "Esencia de Vainilla"]
+            }
+        };
+
+        // Initialize presentation
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDots();
+            updateSlideView();
+
+            // Keyboard Arrow Key Handlers
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                    prevSlide();
+                }
+            });
+        });
+
+        // Render Dots in Navigation
+        function renderDots() {
+            const container = document.getElementById('dotsContainer');
+            container.innerHTML = '';
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('button');
+                dot.className = `h-2.5 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-nicaser-maiz w-7' : 'bg-nicaser-maizSuave/20 hover:bg-nicaser-maiz/50 w-2.5'}`;
+                dot.onclick = () => goToSlide(i);
+                dot.title = `Ir a Diapositiva ${i}`;
+                container.appendChild(dot);
+            }
+        }
+
+        // Slide Navigation Logic
+        function goToSlide(slideNum) {
+            if (slideNum < 1 || slideNum > totalSlides) return;
+            
+            document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+            currentSlide = slideNum;
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            
+            updateSlideView();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
+            } else {
+                goToSlide(1); // Loop to start
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                goToSlide(currentSlide - 1);
+            }
+        }
+
+        // Update View States
+        function updateSlideView() {
+            document.getElementById('currentSlideNum').innerText = currentSlide;
+            document.getElementById('speakerSlideNum').innerText = currentSlide;
+            
+            // Update Progress Bar Width
+            const progressPercent = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            renderDots();
+            updateSpeakerContent();
+        }
+
+        // Toggle Speaker Notes Panel
+        function toggleSpeakerPanel() {
+            const panel = document.getElementById('speakerPanel');
+            isSpeakerPanelOpen = !isSpeakerPanelOpen;
+            
+            if (isSpeakerPanelOpen) {
+                panel.classList.remove('translate-x-full');
+            } else {
+                panel.classList.add('translate-x-full');
+            }
+        }
+
+        // Update Speaker Notes according to current slide
+        function updateSpeakerContent() {
+            const container = document.getElementById('speakerContent');
+            const script = speakerScripts[currentSlide] || { exp1: "Sin notas.", exp2: "Sin notas." };
+
+            container.innerHTML = `
+                <div class="p-3.5 rounded-xl bg-nicaser-cafeLight/80 border border-nicaser-terracota/30 shadow-md">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white mb-2 badge-speaker-1">
+                        <i class="fa-solid fa-user mr-1"></i> Expositor 1
+                    </span>
+                    <p class="text-nicaser-maizSuave/90 leading-relaxed font-light">${script.exp1}</p>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-nicaser-cafeLight/80 border border-nicaser-platano/30 shadow-md">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white mb-2 badge-speaker-2">
+                        <i class="fa-solid fa-user mr-1"></i> Expositor 2
+                    </span>
+                    <p class="text-nicaser-maizSuave/90 leading-relaxed font-light">${script.exp2}</p>
+                </div>
+            `;
+        }
+
+        // Interactive Region Details (Slide 2)
+        function showRegionDetail(type) {
+            const box = document.getElementById('regionDetailBox');
+            let content = "";
+
+            if (type === 'norte') {
+                content = "<strong>🌄 Región Norte (Matagalpa, Jinotega, Estelí, Madriz, Nueva Segovia):</strong> Caracterizada por valles elevados y pinares. Es el corazón del maíz tierno, las rosquillas horneadas en leña y la producción cafetalera de altura.";
+            } else if (type === 'centro') {
+                content = "<strong>🐂 Región Centro (Boaco, Chontales, Río San Juan):</strong> Vastas sabanas y cordilleras ganaderas. Destaca por la maestría en lácteos (queso ahumado, quesillo), sopas de viscera y guisos de res marinados.";
+            } else if (type === 'maiz') {
+                content = "<strong>🌽 Ruta del Maíz (Jalapa & Somoto):</strong> Valles fecundos de Nueva Segovia donde se cosecha el maíz blanco y amarillo de mayor rendimiento del país, insumo directo de güirilas y nacatamales.";
+            } else if (type === 'lacteos') {
+                content = "<strong>🧀 Ruta Láctea (Chontales & Boaco):</strong> Zona de ordeño matutino artesanal. Sus quesos son reconocidos internacionalmente por su salazón en piedra y curado al humo.";
+            }
+
+            box.innerHTML = content;
+        }
+
+        // Open Dish Modal (Slide 3)
+        function openDishModal(dishKey) {
+            const data = dishData[dishKey];
+            if (!data) return;
+
+            const modal = document.getElementById('dishModal');
+            const body = document.getElementById('modalBody');
+
+            body.innerHTML = `
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-xl bg-nicaser-maiz/20 border border-nicaser-maiz/40 flex items-center justify-center ${data.color} text-2xl">
+                        <i class="fa-solid ${data.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif font-bold text-xl text-white leading-tight">${data.title}</h3>
+                        <span class="text-[10px] text-nicaser-maizLight font-semibold">${data.badge}</span>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-nicaser-maizSuave/90 mb-4 leading-relaxed font-light">${data.desc}</p>
+                
+                <div class="p-3 rounded-xl bg-nicaser-cafe/90 border border-nicaser-maiz/20 mb-4">
+                    <h4 class="text-xs font-bold text-nicaser-maiz mb-2"><i class="fa-solid fa-list-check mr-1"></i> Ingredientes Auténticos:</h4>
+                    <ul class="text-xs space-y-1 text-nicaser-maizSuave/80">
+                        ${data.ingredients.map(ing => `<li><i class="fa-solid fa-angle-right text-nicaser-maiz mr-1.5 text-[10px]"></i>${ing}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <button onclick="closeDishModal()" class="w-full py-2 rounded-xl bg-nicaser-terracota text-white font-bold text-xs hover:bg-nicaser-barro transition">
+                    Cerrar Detalle
+                </button>
+            `;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeDishModal() {
+            const modal = document.getElementById('dishModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Switch Rosquilla Tabs (Slide 4)
+        function switchRosquillaTab(tab) {
+            const text = document.getElementById('rosquillaTabText');
+            const btnR = document.getElementById('btnRosquilla');
+            const btnV = document.getElementById('btnViejita');
+            const btnH = document.getElementById('btnHojaldre');
+
+            [btnR, btnV, btnH].forEach(btn => {
+                btn.className = "text-nicaser-maizSuave/60 hover:text-white pb-0.5";
+            });
+
+            if (tab === 'rosquilla') {
+                btnR.className = "font-bold text-nicaser-maiz border-b-2 border-nicaser-maiz pb-0.5";
+                text.innerHTML = "<strong>Doble horneado:</strong> Se hornea una primera vez para cocer la masa de maíz con queso y una segunda vez a fuego lento en horno de barro con leña de roble para tostarla sin quemarla.";
+            } else if (tab === 'viejita') {
+                btnV.className = "font-bold text-nicaser-maiz border-b-2 border-nicaser-maiz pb-0.5";
+                text.innerHTML = "<strong>Masa con Dulce de Caña:</strong> Forma circular cóncava rellenada en el centro con un centro grumoso de dulce de rapadura y mantequilla que se derrite al hornearse.";
+            } else if (tab === 'hojaldre') {
+                btnH.className = "font-bold text-nicaser-maiz border-b-2 border-nicaser-maiz pb-0.5";
+                text.innerHTML = "<strong>Sopaipillas & Empanadas:</strong> Elaboradas con masa fina hojaldrada frita o horneada, rellena de queso o atado dulzón de caña de las moliendas rurales.";
+            }
+        }
+
+        function triggerRosquillaAnimation() {
+            alert("☕ Ritual Somoteño: ¡Rosquilla sumergida en café de altura de Jinotega! Una explosión de sabor salado, crujiente y dulce aroma.");
+        }
+
+        // Show Drink Detail (Slide 6)
+        function showDrinkDetail(key) {
+            const data = drinkData[key];
+            if (!data) return;
+
+            document.getElementById('drinkTitle').innerText = data.title;
+            document.getElementById('drinkTag').innerText = data.tag;
+            document.getElementById('drinkDesc').innerText = data.desc;
+
+            const ingContainer = document.getElementById('drinkIngredients');
+            ingContainer.innerHTML = data.ingredients.map(ing => 
+                `<span class="text-[10px] px-2 py-0.5 rounded-full bg-nicaser-cafe/80 text-nicaser-maizLight border border-nicaser-maiz/20">${ing}</span>`
+            ).join('');
+        }
+
+        // Fullscreen Toggle
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error al activar pantalla completa: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
 </body>
 </html>
