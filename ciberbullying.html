@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciberbullying y Violencia Digital - UAM Grupo 9</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN para Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        uam: {
+                            navy: '#0A192F',
+                            dark: '#0F2C59',
+                            blue: '#003366',
+                            bright: '#0077B6',
+                            cyan: '#00B4D8',
+                            lightCyan: '#E0F7FA',
+                            accent: '#38BDF8'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Transiciones suaves entre diapositivas */
+        .slide-content {
+            opacity: 0;
+            transform: translateY(18px) scale(0.98);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-content.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            position: relative;
+        }
+
+        /* Efecto Glassmorphism */
+        .glass-card {
+            background: rgba(15, 44, 89, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 51, 102, 0.12);
+        }
+
+        /* Gradientes dinámicos */
+        .bg-uam-gradient {
+            background: radial-gradient(circle at 10% 20%, #0F2C59 0%, #0A192F 90%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #38BDF8 0%, #00B4D8 50%, #FFFFFF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 25, 47, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0077B6;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+
+<body class="bg-uam-navy text-slate-100 font-sans h-full overflow-hidden select-none flex flex-col justify-between">
+
+    <!-- BARRA SUPERIOR DE PROGRESO Y CONTROLES -->
+    <header class="w-full z-30 bg-uam-navy/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between transition-all">
+        <!-- Logo / Marca UAM -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-uam-blue to-uam-cyan flex items-center justify-center font-display font-black text-white text-xl shadow-lg shadow-uam-cyan/20 border border-white/20">
+                UAM
+            </div>
+            <div>
+                <span class="text-xs uppercase tracking-widest font-semibold text-uam-cyan block">Universidad Americana</span>
+                <span class="text-sm font-bold text-slate-200 hidden sm:inline">PIU • Grupo #9</span>
+            </div>
+        </div>
+
+        <!-- Título Central de Diapositiva Activa -->
+        <div class="hidden md:flex items-center gap-2 max-w-md truncate">
+            <span class="w-2 h-2 rounded-full bg-uam-cyan animate-pulse"></span>
+            <span id="header-slide-title" class="text-xs font-medium text-slate-300 truncate">Portada</span>
+        </div>
+
+        <!-- Botones de Acción / Modos -->
+        <div class="flex items-center gap-2">
+            <!-- Botón Vista General (Grid) -->
+            <button id="btn-grid" onclick="toggleOverviewModal()" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-uam-blue text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-700/50" title="Vista General (G)">
+                <i class="fa-solid fa-border-all"></i>
+                <span class="hidden lg:inline">Resumen</span>
+            </button>
+
+            <!-- Botón Notas de Orador -->
+            <button id="btn-notes" onclick="toggleNotesModal()" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-uam-blue text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-700/50" title="Notas del Expositor (N)">
+                <i class="fa-solid fa-note-sticky text-yellow-400"></i>
+                <span class="hidden lg:inline">Notas</span>
+            </button>
+
+            <!-- Botón Pantalla Completa -->
+            <button id="btn-fullscreen" onclick="toggleFullscreen()" class="p-2 rounded-lg bg-slate-800/80 hover:bg-uam-blue text-slate-300 hover:text-white text-xs transition-all border border-slate-700/50" title="Pantalla Completa (F)">
+                <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- BARRA DE PROGRESO DE PRESENTACIÓN -->
+    <div class="w-full h-1 bg-slate-800/80 relative z-30">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-uam-bright to-uam-cyan transition-all duration-300 w-1/6"></div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE DIAPOSITIVAS -->
+    <main id="slide-container" class="relative flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-center overflow-y-auto">
+        
+        <!-- DIAPOSITIVA 1: PORTADA -->
+        <section class="slide-content active w-full" data-slide="1" data-title="Portada Institucional">
+            <div class="glass-card rounded-3xl p-6 sm:p-10 lg:p-12 relative overflow-hidden shadow-2xl border border-uam-cyan/20">
+                <!-- Decoración de fondo -->
+                <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-uam-cyan/10 blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-uam-blue/30 blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
+                    <!-- Insignia Universitaria -->
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-uam-cyan/10 border border-uam-cyan/30 text-uam-cyan text-xs sm:text-sm font-semibold mb-6 tracking-wide uppercase">
+                        <i class="fa-solid fa-graduation-cap"></i> Universidad Americana (UAM) • Clase PIU
+                    </div>
+
+                    <!-- Título Principal -->
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight leading-tight text-white mb-4">
+                        Ciberbullying y <span class="text-gradient">Violencia Digital</span>
+                    </h1>
+
+                    <p class="text-lg sm:text-2xl font-light text-slate-300 mb-8 max-w-2xl">
+                        Convivencia Ética en la Universidad: <span class="text-uam-cyan font-normal">De los principios éticos a la responsabilidad digital</span>
+                    </p>
+
+                    <!-- Divider -->
+                    <div class="w-24 h-1 bg-gradient-to-r from-uam-blue via-uam-cyan to-transparent rounded-full mb-8"></div>
+
+                    <!-- Ficha de Datos del Grupo -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl text-left">
+                        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-700/50 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-uam-blue/50 flex items-center justify-center text-uam-cyan text-xl">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block uppercase font-medium">Equipo de Trabajo</span>
+                                <span class="text-base font-bold text-white">Grupo #9</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-700/50 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-uam-cyan/20 flex items-center justify-center text-uam-cyan text-xl">
+                                <i class="fa-solid fa-user-pen"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block uppercase font-medium">Expositores</span>
+                                <span class="text-sm sm:text-base font-bold text-white block">Raúl Valverde</span>
+                                <span class="text-sm sm:text-base font-bold text-white block">Kellys Bellanger</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicador de Inicio -->
+                    <button onclick="nextSlide()" class="mt-8 inline-flex items-center gap-3 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-uam-bright to-uam-cyan text-slate-900 font-bold hover:shadow-lg hover:shadow-uam-cyan/30 hover:scale-105 transition-all cursor-pointer">
+                        <span>Iniciar Exposición</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 2: PROBLEMA SOCIAL IDENTIFICADO -->
+        <section class="slide-content w-full" data-slide="2" data-title="Problema Social Identificado">
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">Diagnóstico Inicial</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold font-display text-white mt-2">La Brecha Digital: Violencia y Cyberbullying</h2>
+                    <p class="text-slate-300 text-sm sm:text-base mt-1">La falta de ética en redes contraviene la convivencia universitaria.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Tarjeta 1: Definición -->
+                    <div class="glass-card rounded-2xl p-6 border-l-4 border-l-uam-cyan hover:border-uam-cyan transition-all transform hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-uam-cyan/10 text-uam-cyan flex items-center justify-center text-2xl mb-4">
+                            <i class="fa-solid fa-shield-cat"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Definición del Problema</h3>
+                        <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+                            Agresión, acoso, difamación, <span class="text-uam-cyan font-semibold">doxxing</span> y divulgación no consentida de información o contenido privado a través de entornos virtuales y plataformas sociales.
+                        </p>
+                        <div class="mt-4 pt-4 border-t border-slate-700/50 flex flex-wrap gap-2">
+                            <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg">Hostigamiento</span>
+                            <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg">Suplantación</span>
+                            <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg">Doxxing</span>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta 2: Impacto Universitario -->
+                    <div class="glass-card rounded-2xl p-6 border-l-4 border-l-red-500 hover:border-red-400 transition-all transform hover:-translate-y-1">
+                        <div class="w-12 h-12 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-2xl mb-4">
+                            <i class="fa-solid fa-heart-crack"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Impacto en el Entorno Universitario</h3>
+                        <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+                            Afecta gravemente la <span class="text-red-400 font-semibold">paz mental</span>, destruye el entorno seguro de aprendizaje y vulnera la integridad ética y la convivencia dentro de la comunidad estudiantil.
+                        </p>
+                        <div class="mt-4 pt-4 border-t border-slate-700/50 flex flex-wrap gap-2">
+                            <span class="text-xs bg-red-950/40 text-red-300 border border-red-800/40 px-2.5 py-1 rounded-lg">Ansiedad & Estrés</span>
+                            <span class="text-xs bg-red-950/40 text-red-300 border border-red-800/40 px-2.5 py-1 rounded-lg">Deserción Académica</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cuadro de Síntesis Institucional -->
+                <div class="mt-6 p-4 rounded-xl bg-slate-900/80 border border-uam-bright/30 flex items-center gap-4">
+                    <i class="fa-solid fa-triangle-exclamation text-uam-cyan text-2xl shrink-0"></i>
+                    <p class="text-xs sm:text-sm text-slate-300">
+                        <strong class="text-white">Alerta institucional:</strong> Las conductas digitales hostiles en grupos de mensajería o redes académicas atentan contra el reglamento de convivencia ética de la UAM.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 3: BENEFICIARIOS DIRECTOS -->
+        <section class="slide-content w-full" data-slide="3" data-title="Beneficiarios Directos">
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">Población Objetivo</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold font-display text-white mt-2">Estudiantes Universitarios: Centro de la Protección Digital</h2>
+                    <p class="text-slate-300 text-sm sm:text-base mt-1">El derecho innegociable a la convivencia digna y libre de acoso.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Puntos clave 1 -->
+                    <div class="glass-card rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="w-8 h-8 rounded-full bg-uam-cyan text-slate-900 font-bold flex items-center justify-center text-sm">1</span>
+                                <h3 class="text-lg font-bold text-white">Beneficiarios Directos</h3>
+                            </div>
+                            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                Toda la <strong class="text-uam-cyan">comunidad estudiantil de la Universidad Americana (UAM)</strong> que interactúa activamente en entornos de aprendizaje presenciales y espacios digitales.
+                            </p>
+                        </div>
+                        <div class="mt-6 flex items-center gap-2 text-xs text-uam-cyan font-medium">
+                            <i class="fa-solid fa-laptop-code"></i> Presencial & Virtualidad Integrada
+                        </div>
+                    </div>
+
+                    <!-- Puntos clave 2 -->
+                    <div class="glass-card rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="w-8 h-8 rounded-full bg-uam-bright text-white font-bold flex items-center justify-center text-sm">2</span>
+                                <h3 class="text-lg font-bold text-white">Resguardo Ético e Institucional</h3>
+                            </div>
+                            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                Garantizar la correcta <strong class="text-white">aplicación del Reglamento Estudiantil</strong>, asegurando el respeto estricto a los derechos humanos, cero tolerancia a la discriminación y el resguardo integral del bienestar personal.
+                            </p>
+                        </div>
+                        <div class="mt-6 flex items-center gap-2 text-xs text-uam-accent font-medium">
+                            <i class="fa-solid fa-scale-balanced"></i> Marco Normativo Disciplinario UAM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banner Inferior Informativo -->
+                <div class="mt-6 grid grid-cols-3 gap-3 text-center">
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <i class="fa-solid fa-user-shield text-uam-cyan mb-1 block text-lg"></i>
+                        <span class="text-xs font-semibold text-slate-200">Trato Digno</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <i class="fa-solid fa-ban text-uam-cyan mb-1 block text-lg"></i>
+                        <span class="text-xs font-semibold text-slate-200">Cero Discriminación</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <i class="fa-solid fa-shield-heart text-uam-cyan mb-1 block text-lg"></i>
+                        <span class="text-xs font-semibold text-slate-200">Bienestar Estudiantil</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 4: EVIDENCIAS DE LA PROBLEMÁTICA -->
+        <section class="slide-content w-full" data-slide="4" data-title="Evidencias y Datos">
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">Evidencia Estadística</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold font-display text-white mt-2">Evidencias y Datos de la Realidad Digital</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Estadistica Principal Prominente -->
+                    <div class="lg:col-span-5 glass-card rounded-3xl p-8 text-center border border-uam-cyan/30 bg-gradient-to-b from-uam-dark to-uam-navy">
+                        <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">Estadística Global en Educación Superior</span>
+                        <div class="my-4">
+                            <span id="stat-counter" class="text-6xl sm:text-7xl font-black font-display text-gradient">30%</span>
+                            <span class="text-3xl font-bold text-uam-cyan">+</span>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            De los estudiantes de educación superior reportan haber sido víctimas o presenciado <strong class="text-white">hostigamiento o acoso</strong> en entornos digitales.
+                        </p>
+                        <span class="inline-block mt-4 text-[10px] uppercase text-slate-400 font-medium">Fuente: Informes UNESCO / UNICEF en Entornos Virtuales</span>
+                    </div>
+
+                    <!-- Situaciones Reales Registradas -->
+                    <div class="lg:col-span-7 flex flex-col gap-3">
+                        <h3 class="text-base font-bold text-slate-200 uppercase tracking-wide mb-1">Manifestaciones Comunes en el Ámbito Académico:</h3>
+
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-comments"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">Difusión No Consentida</h4>
+                                <p class="text-xs sm:text-sm text-slate-300">Divulgación de capturas de chats privados, fotos o videos sin autorización en grupos estudiantiles.</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/10 text-yellow-400 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-user-ninja"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">Perfiles Falsos y Difamación</h4>
+                                <p class="text-xs sm:text-sm text-slate-300">Creación de cuentas anónimas creadas específicamente para dañar la reputación académica y personal.</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-uam-cyan/10 text-uam-cyan flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-users-slash"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-white">Ciberacoso Masivo en Grupos</h4>
+                                <p class="text-xs sm:text-sm text-slate-300">Linchamiento u hostigamiento sistemático en plataformas como WhatsApp, Instagram o Discord.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 5: ACCIÓN DE CONCIENTIZACIÓN PROPUESTA -->
+        <section class="slide-content w-full" data-slide="5" data-title="Acción Propuesta">
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">Propuesta de Acción Social</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold font-display text-white mt-2">De la Norma a la Red: Campaña 'UAM Conectada y Ética'</h2>
+                    <p class="text-slate-300 text-sm sm:text-base mt-1">Estrategia de Responsabilidad Social Estudiantil para la Convivencia Digital.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Componente 1: Redes Sociales -->
+                    <div class="glass-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-uam-cyan">
+                        <div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <i class="fa-brands fa-instagram text-2xl text-pink-500"></i>
+                                <i class="fa-brands fa-tiktok text-2xl text-white"></i>
+                                <h3 class="text-lg font-bold text-white">Campaña Digital Interactiva</h3>
+                            </div>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                                Creación y difusión de carruseles informativos, videos cortos y guías rápidas de buena convivencia para sensibilizar a la comunidad universitaria.
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/60 text-xs text-slate-300">
+                            <i class="fa-solid fa-hashtag text-uam-cyan"></i> #UAMSinAcoso #RedesEticas
+                        </div>
+                    </div>
+
+                    <!-- Componente 2: Código QR & Protocolo -->
+                    <div class="glass-card rounded-2xl p-6 flex flex-col justify-between border-t-4 border-t-uam-bright">
+                        <div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <i class="fa-solid fa-qrcode text-2xl text-uam-cyan"></i>
+                                <h3 class="text-lg font-bold text-white">Código QR & Compromiso Digital</h3>
+                            </div>
+                            <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                                Despliegue de códigos QR en puntos estratégicos del campus para acceder al <strong class="text-white">Protocolo de Denuncia Rápida</strong> y firmar el compromiso digital ético.
+                            </p>
+                        </div>
+                        <button onclick="openPledgeModal()" class="w-full py-2.5 rounded-xl bg-uam-cyan/20 hover:bg-uam-cyan/30 border border-uam-cyan/40 text-uam-cyan font-bold text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-signature"></i> Probar Firma de Compromiso Ético
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulación interactiva de campaña -->
+                <div class="mt-6 p-4 rounded-2xl bg-gradient-to-r from-uam-navy to-uam-dark border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-uam-cyan/20 flex items-center justify-center text-uam-cyan">
+                            <i class="fa-solid fa-bullhorn"></i>
+                        </div>
+                        <div class="text-center sm:text-left">
+                            <span class="text-xs text-slate-400 block font-medium uppercase">Meta de la Campaña</span>
+                            <span class="text-sm font-bold text-white">Alcanzar al 100% de la comunidad de nuevo ingreso en la UAM</span>
+                        </div>
+                    </div>
+                    <span class="px-4 py-1.5 rounded-full bg-uam-bright/20 border border-uam-bright text-uam-cyan text-xs font-bold shrink-0">Impacto Positivo Directo</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAPOSITIVA 6: MENSAJE CLAVE Y REFLEXIÓN FINAL -->
+        <section class="slide-content w-full" data-slide="6" data-title="Mensaje Clave y Reflexión">
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="text-xs font-extrabold uppercase tracking-widest text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">Cierre & Conclusión</span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold font-display text-white mt-2">Mensaje Clave y Reflexión Final</h2>
+                </div>
+
+                <!-- Frase Destacada Poderosa -->
+                <div class="glass-card rounded-3xl p-6 sm:p-10 text-center border-2 border-uam-cyan/40 relative overflow-hidden mb-6 shadow-2xl bg-gradient-to-br from-uam-dark/90 via-uam-navy to-slate-900">
+                    <i class="fa-solid fa-quote-left text-4xl text-uam-cyan/20 absolute left-6 top-6"></i>
+                    
+                    <p class="text-xl sm:text-3xl font-extrabold font-display text-white leading-tight mb-4 relative z-10">
+                        "Lo que publicas en pantalla <span class="text-gradient">impacta vidas reales</span>: la ética universitaria no se apaga al conectarse."
+                    </p>
+
+                    <i class="fa-solid fa-quote-right text-4xl text-uam-cyan/20 absolute right-6 bottom-6"></i>
+                </div>
+
+                <!-- Reflexión Final -->
+                <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-700/80">
+                    <h3 class="text-base font-bold text-uam-cyan mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb"></i> ¿Por qué es vital concienciar en la UAM?
+                    </h3>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Concientizar sobre la violencia digital en la universidad es fundamental para <strong class="text-white">proteger la salud mental</strong>, evitar el abandono académico por acoso y garantizar que la excelencia profesional vaya siempre acompañada de una sólida <strong class="text-uam-cyan">empatía y responsabilidad digital</strong>.
+                    </p>
+                </div>
+
+                <!-- Pie de Créditos finales -->
+                <div class="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 border-t border-slate-800 pt-4">
+                    <span>Universidad Americana (UAM) • Clase PIU</span>
+                    <span>Grupo #9: Raúl Valverde & Kellys Bellanger</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BARRA INFERIOR DE NAVEGACIÓN Y CONTROLES -->
+    <footer class="w-full z-30 bg-uam-navy/95 backdrop-blur-md border-t border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            
+            <!-- Botón Anterior -->
+            <button id="btn-prev" onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-uam-blue text-slate-200 hover:text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 border border-slate-700/50 disabled:opacity-40 disabled:pointer-events-none">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span class="hidden sm:inline">Anterior</span>
+            </button>
+
+            <!-- Indicador de Puntos y Contador -->
+            <div class="flex items-center gap-3">
+                <!-- Dots nav -->
+                <div id="dots-container" class="hidden sm:flex items-center gap-2">
+                    <!-- Generado dinámicamente -->
+                </div>
+
+                <!-- Contador numérico -->
+                <span id="slide-counter" class="text-xs sm:text-sm font-bold text-uam-cyan bg-uam-cyan/10 px-3 py-1 rounded-full border border-uam-cyan/30">
+                    1 / 6
+                </span>
+            </div>
+
+            <!-- Botón Siguiente -->
+            <button id="btn-next" onclick="nextSlide()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-uam-bright to-uam-cyan text-slate-900 font-bold text-xs sm:text-sm transition-all hover:shadow-md hover:shadow-uam-cyan/20 flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+                <span class="hidden sm:inline">Siguiente</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- MODAL: VISTA GENERAL (THUMBNAILS) -->
+    <div id="modal-overview" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-uam-navy border border-slate-700 rounded-3xl w-full max-w-4xl p-6 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-border-all text-uam-cyan"></i> Vista General de Diapositivas
+                </h3>
+                <button onclick="toggleOverviewModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="overview-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Generado por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: NOTAS DE ORADOR -->
+    <div id="modal-notes" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-6">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <h3 class="text-base font-bold text-yellow-400 flex items-center gap-2">
+                    <i class="fa-solid fa-note-sticky"></i> Guía del Expositor (Raúl & Kellys)
+                </h3>
+                <button onclick="toggleNotesModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="speaker-notes-content" class="text-slate-300 text-sm leading-relaxed space-y-3">
+                <!-- Se llena dinámicamente segun la diapositiva activa -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FIRMA DE COMPROMISO ÉTICO (INTERACTIVO) -->
+    <div id="modal-pledge" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-uam-navy border border-uam-cyan/40 rounded-3xl w-full max-w-md p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-uam-cyan/20 text-uam-cyan flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">Compromiso Ético Digital UAM</h3>
+            <p class="text-xs text-slate-300 mb-4">Al ingresar tu nombre aceptas promover la empatía y la cero tolerancia al acoso digital.</p>
+            
+            <input type="text" id="pledge-name" placeholder="Tu Nombre y Apellido" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm mb-4 focus:outline-none focus:border-uam-cyan">
+            
+            <div id="pledge-badge" class="hidden p-4 rounded-xl bg-uam-cyan/10 border border-uam-cyan text-uam-cyan text-xs font-bold mb-4">
+                ¡Gracias por sumarte al cambio ético en la UAM!
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="signPledge()" class="flex-1 py-2.5 rounded-xl bg-uam-cyan text-slate-950 font-bold text-xs hover:bg-uam-accent transition-all">
+                    Firmar Compromiso
+                </button>
+                <button onclick="closePledgeModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-semibold text-xs hover:bg-slate-700">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LÓGICA EN JAVASCRIPT -->
+    <script>
+        // Estado global de la presentación
+        let currentSlide = 1;
+        const totalSlides = 6;
+
+        // Notas del orador estructuradas por diapositiva
+        const speakerNotes = {
+            1: "<strong>Puntos de Apertura (Raúl/Kellys):</strong> Saludar a la clase y a la profesora. Presentar el tema destacando que la violencia digital no es un juego, sino un problema ético real que atenta contra la integridad de los estudiantes en la UAM.",
+            2: "<strong>Explicación del Problema:</strong> Definir conceptos clave como 'Doxxing' (publicar datos privados) y suplantación de identidad. Explicar cómo estas prácticas afectan la salud mental y académica de las víctimas.",
+            3: "<strong>Beneficiarios e Institucionalidad:</strong> Mencionar que la protección no es solo un deseo, sino un derecho estipulado en el Reglamento Estudiantil UAM. Resaltar la importancia del respeto entre compañeros.",
+            4: "<strong>Análisis de Datos:</strong> Hacer énfasis en la cifra del 30%+. Contextualizar con casos cotidianos (grupos de WhatsApp sin control, comentarios malintencionados en redes).",
+            5: "<strong>Propuesta Práctica:</strong> Presentar la campaña 'UAM Conectada y Ética'. Explicar el uso del código QR en el campus para acceder a canales seguros de reporte de violencia digital.",
+            6: "<strong>Cierre y Mensaje Clave:</strong> Leer la frase principal de la diapositiva 6 con tono firme e inspirador. Agradecer por la atención e invitar a preguntas de la clase."
+        };
+
+        // Inicialización al cargar la ventana
+        window.onload = function() {
+            initPresentation();
+            setupKeyboardNav();
+            setupTouchNav();
+        };
+
+        function initPresentation() {
+            updateSlideView();
+            renderDots();
+            renderOverviewGrid();
+        }
+
+        function updateSlideView() {
+            // Actualizar visibilidad de diapositivas
+            const slides = document.querySelectorAll('.slide-content');
+            slides.forEach((slide) => {
+                const slideNum = parseInt(slide.getAttribute('data-slide'));
+                if (slideNum === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            // Actualizar Titular Superior
+            const activeSlideElem = document.querySelector(`.slide-content[data-slide="${currentSlide}"]`);
+            if (activeSlideElem) {
+                const title = activeSlideElem.getAttribute('data-title');
+                document.getElementById('header-slide-title').innerText = title;
+            }
+
+            // Actualizar Barra de Progreso
+            const percentage = (currentSlide / totalSlides) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            // Actualizar Contador
+            document.getElementById('slide-counter').innerText = `${currentSlide} / ${totalSlides}`;
+
+            // Actualizar Estado de Botones
+            document.getElementById('btn-prev').disabled = (currentSlide === 1);
+            document.getElementById('btn-next').disabled = (currentSlide === totalSlides);
+
+            // Actualizar Puntos de Navegación
+            updateDots();
+
+            // Actualizar Notas del Expositor
+            document.getElementById('speaker-notes-content').innerHTML = speakerNotes[currentSlide] || "Sin notas adicionales para esta diapositiva.";
+
+            // Animación del contador de la diapo 4
+            if (currentSlide === 4) {
+                animateCounter();
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlideView();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlideView();
+            }
+        }
+
+        function goToSlide(slideNum) {
+            if (slideNum >= 1 && slideNum <= totalSlides) {
+                currentSlide = slideNum;
+                updateSlideView();
+                // Cerrar modal de vista general si está abierto
+                const modalGrid = document.getElementById('modal-overview');
+                modalGrid.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        // Navegación por teclado (Flecha izquierda / derecha)
+        function setupKeyboardNav() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'Space') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                } else if (e.key === 'f' || e.key === 'F') {
+                    toggleFullscreen();
+                } else if (e.key === 'g' || e.key === 'G') {
+                    toggleOverviewModal();
+                } else if (e.key === 'n' || e.key === 'N') {
+                    toggleNotesModal();
+                }
+            });
+        }
+
+        // Navegación táctil (Swipe)
+        function setupTouchNav() {
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            const slideContainer = document.getElementById('slide-container');
+
+            slideContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            slideContainer.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                if (touchEndX < touchStartX - swipeThreshold) {
+                    nextSlide();
+                }
+                if (touchEndX > touchStartX + swipeThreshold) {
+                    prevSlide();
+                }
+            }
+        }
+
+        // Renderizar Puntos Inferiores
+        function renderDots() {
+            const container = document.getElementById('dots-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('button');
+                dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === currentSlide ? 'bg-uam-cyan w-6' : 'bg-slate-700 hover:bg-slate-500'}`;
+                dot.onclick = () => goToSlide(i);
+                dot.title = `Diapositiva ${i}`;
+                container.appendChild(dot);
+            }
+        }
+
+        function updateDots() {
+            const dots = document.getElementById('dots-container').children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i + 1 === currentSlide) {
+                    dots[i].className = 'w-6 h-2.5 rounded-full bg-uam-cyan transition-all duration-300';
+                } else {
+                    dots[i].className = 'w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-slate-500 transition-all duration-300';
+                }
+            }
+        }
+
+        // Modales
+        function toggleOverviewModal() {
+            const modal = document.getElementById('modal-overview');
+            modal.classList.toggle('opacity-0');
+            modal.classList.toggle('pointer-events-none');
+        }
+
+        function toggleNotesModal() {
+            const modal = document.getElementById('modal-notes');
+            modal.classList.toggle('opacity-0');
+            modal.classList.toggle('pointer-events-none');
+        }
+
+        function openPledgeModal() {
+            const modal = document.getElementById('modal-pledge');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closePledgeModal() {
+            const modal = document.getElementById('modal-pledge');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function signPledge() {
+            const nameInput = document.getElementById('pledge-name').value.trim();
+            const badge = document.getElementById('pledge-badge');
+            if (nameInput.length > 0) {
+                badge.innerText = `¡Gracias, ${nameInput}! Has firmado el Compromiso Ético Digital UAM.`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.innerText = `¡Gracias! Has firmado el Compromiso Ético Digital UAM.`;
+                badge.classList.remove('hidden');
+            }
+        }
+
+        function renderOverviewGrid() {
+            const grid = document.getElementById('overview-grid');
+            grid.innerHTML = '';
+            
+            const slides = document.querySelectorAll('.slide-content');
+            slides.forEach((slide) => {
+                const num = slide.getAttribute('data-slide');
+                const title = slide.getAttribute('data-title');
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl bg-slate-900 border ${parseInt(num) === currentSlide ? 'border-uam-cyan bg-slate-800' : 'border-slate-800'} hover:border-uam-bright cursor-pointer transition-all flex flex-col justify-between h-32`;
+                card.onclick = () => goToSlide(parseInt(num));
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-uam-cyan">Diapo ${num}</span>
+                        <i class="fa-solid fa-desktop text-xs text-slate-500"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-white line-clamp-2">${title}</p>
+                    <span class="text-[10px] text-slate-400">Haz clic para ir</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Pantalla completa
+        function toggleFullscreen() {
+            const elem = document.documentElement;
+            const icon = document.getElementById('fullscreen-icon');
+            
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                }
+                icon.className = 'fa-solid fa-compress';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+                icon.className = 'fa-solid fa-expand';
+            }
+        }
+
+        // Animación suave de contador
+        function animateCounter() {
+            const counterElem = document.getElementById('stat-counter');
+            if (!counterElem) return;
+            
+            let count = 0;
+            const target = 30;
+            const duration = 1000;
+            const stepTime = Math.abs(Math.floor(duration / target));
+
+            const timer = setInterval(() => {
+                count++;
+                counterElem.innerText = count + '%';
+                if (count >= target) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+    </script>
+</body>
+</html>
